@@ -3,9 +3,9 @@
 An application with Mica background using transparent-background WebView2 to host webpage, and go to discord and inject some basic CSS.
 
 # Disclaimer
-> If you plan to use this, I'm not sure if it violates Discord TOS or not. I'm not a lawyer. But here's how it works
-> 1. The app itself is basically like a web browser, hosting the web content in WebView2 that points to discord.com
-> 2. It injects this code.
+If you plan to use this, I'm not sure if it violates Discord TOS or not. I'm not a lawyer. But here's how it works
+1. The app itself is basically like a web browser, hosting the web content in WebView2 that points to discord.com
+2. It injects this code.
 ```javascript
 (function () {
     let s = document.createElement('style');
@@ -19,4 +19,4 @@ An application with Mica background using transparent-background WebView2 to hos
 `.trim();
     document.head.appendChild(s);
 ```
-> If you use this, it's your responsibility if you get banned. But the app is not harmful itself and the security should as safe as other apps using Microsoft Edge WebView2.
+If you use this, it's your responsibility if you get banned. But the app is not harmful itself and the security should as safe as other apps using Microsoft Edge WebView2.
