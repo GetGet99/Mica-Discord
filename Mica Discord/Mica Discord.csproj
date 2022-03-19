@@ -8,6 +8,7 @@
 		<UseWPF>true</UseWPF>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<RootNamespace>MicaDiscord</RootNamespace>
+		<Version>1.1.0</Version>
 	</PropertyGroup>
 
 	<ItemGroup>

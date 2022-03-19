@@ -54,11 +54,11 @@ public partial class MainWindow : Window
         
         SetBackdrop((BackdropType)Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType, ignoreCase: true));
         WebView.CoreWebView2InitializationCompleted += (_, _) => RefreshFrame();
-        WebView.NavigationCompleted += delegate
+        WebView.NavigationCompleted += async delegate
         {
             DiscordEffectApplied = Settings.Default.ReplaceDiscordBackground;
             if (DiscordEffectApplied)
-                WebView.CoreWebView2.ExecuteScriptAsync(@"
+                await WebView.CoreWebView2.ExecuteScriptAsync(@"
 (function () {
     let s = document.createElement('style');
     s.innerHTML = `
@@ -67,6 +67,11 @@ public partial class MainWindow : Window
     --background-secondary: rgba(50,50,50,0.25);
     --background-secondary-alt: rgba(50,50,50,0.25);
     --background-tertiary: #fff0;
+    --background-floating: rgba(50,50,50,0.75);
+    --deprecated-store-bg: rgba(50,50,50,0.25);
+}
+.theme-dark .container-2cd8Mz {
+    background-color: rgba(50,50,50,0.25);
 }
 `.trim();
     document.head.appendChild(s);

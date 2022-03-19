@@ -18,8 +18,14 @@ If you plan to use this, I'm not sure if it violates Discord TOS or not. I'm not
     --background-secondary: rgba(50,50,50,0.25);
     --background-secondary-alt: rgba(50,50,50,0.25);
     --background-tertiary: #fff0;
+    --background-floating: rgba(50,50,50,0.75);
+    --deprecated-store-bg: rgba(50,50,50,0.25);
+}
+.theme-dark .container-2cd8Mz {
+    background-color: rgba(50,50,50,0.25);
 }
 `.trim();
     document.head.appendChild(s);
+})()
 ```
 If you use this, it's your responsibility if you get banned. But the app is not harmful itself and the security should as safe as other apps using Microsoft Edge WebView2.
