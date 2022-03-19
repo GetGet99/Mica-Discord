@@ -9,11 +9,17 @@ using System.Drawing;
 using Microsoft.UI.Windowing;
 using Microsoft.UI;
 using Microsoft.Windows.ApplicationModel.DynamicDependency;
+using System.Runtime.InteropServices;
+using System.Windows.Media.Imaging;
+
 namespace MicaDiscord;
 
 public partial class MainWindow : Window
 {
     bool DiscordEffectApplied = false;
+    //If you get 'dllimport unknown'-, then add 'using System.Runtime.InteropServices;'
+    
+
     void OnLoaded(object sender, RoutedEventArgs e)
     {
         var TitleBar = AppWindow.TitleBar;
@@ -73,10 +79,22 @@ public partial class MainWindow : Window
 .theme-dark .container-2cd8Mz {
     background-color: rgba(50,50,50,0.25);
 }
+
+.callContainer-HtHELf {
+    background-color: rgba(50,50,50,0);
+}
 `.trim();
     document.head.appendChild(s);
 })()
 ".Trim());
+        };
+        Closing += (_, e) =>
+        {
+            if (!ForceClose && Settings.Default.UseSystemTray)
+            {
+                e.Cancel = true;
+                Hide();
+            }
         };
         
         TitleBar.ExtendsContentIntoTitleBar = true;
@@ -93,6 +111,7 @@ public partial class MainWindow : Window
 }
 public partial class MainWindow : Window
 {
+    public bool ForceClose { get; set; } = false;
     public MainWindow()
     {
         WindowInteropHelper = new WindowInteropHelper(this);
@@ -108,6 +127,16 @@ public partial class MainWindow : Window
         {
             SetBackdrop((BackdropType)Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType, ignoreCase: true));
         };
+        Icon = ImageSourceFromBitmap(ProgramResources.Logo);
+    }
+    public static ImageSource ImageSourceFromBitmap(Bitmap bmp)
+    {
+        var handle = bmp.GetHbitmap();
+        try
+        {
+            return Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+        }
+        finally { CustomPInvoke.DeleteObject(handle); }
     }
 
     void SetBackdrop(BackdropType BackdropType) => SetBackdrop((int)BackdropType);

@@ -9,6 +9,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ApplicationDefinition Update="App.xaml">
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
     <Page Update="SettingsDialog.xaml">
       <SubType>Designer</SubType>
     </Page>

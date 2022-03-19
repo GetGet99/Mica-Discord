@@ -46,5 +46,17 @@ namespace MicaDiscord {
                 this["ReplaceDiscordBackground"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseSystemTray {
+            get {
+                return ((bool)(this["UseSystemTray"]));
+            }
+            set {
+                this["UseSystemTray"] = value;
+            }
+        }
     }
 }

@@ -43,6 +43,21 @@
                         Enable
                     </Button>
                 </cg:ColumnGrid>
+                <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">
+                    <Label Foreground="White" VerticalAlignment="Center">
+                        Minimized to system tray (requires restart)
+                    </Label>
+                    <ui:ToggleSwitch
+                        x:Name="Systray"
+                        cg:CustomGrid.GridType="Auto"
+                        Foreground="White"
+                        VerticalAlignment="Center"
+                        OffContent=""
+                        OnContent=""
+                        Margin="0,0,-110,0"
+                        Toggled="SystrayToggled">
+                    </ui:ToggleSwitch>
+                </cg:ColumnGrid>
                 <Button cg:CustomGrid.GridType="Auto" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" Click="OpenAppFolder">
                     Open App Location Folder
                 </Button>

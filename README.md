@@ -27,8 +27,12 @@ If you plan to use this with replace background enabled, I'm not sure if it viol
 .theme-dark .container-2cd8Mz {
     background-color: rgba(50,50,50,0.25);
 }
+
+.callContainer-HtHELf {
+    background-color: rgba(50,50,50,0);
+}
 `.trim();
     document.head.appendChild(s);
 })()
 ```
-If you use any part of this software, it's your responsibility if you get banned. But the app is not harmful itself and the security should as safe as other apps using Microsoft Edge WebView2.
+**If you use any part of this software, regardless of having any option on or off, it's your responsibility if you get banned or punished by Discord.** But the app is not harmful itself and the security should as safe as other apps using Microsoft Edge WebView2.

@@ -24,10 +24,11 @@ namespace MicaDiscord
         public SettingsDialog()
         {
             InitializeComponent();
-            IsVisibleChanged += (_, __) =>
+            IsVisibleChanged += (_, _) =>
             {
                 Backdrop.SelectedItem = Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType);
                 ReplaceBackgroundToggle.Content = Settings.Default.ReplaceDiscordBackground ? "Disable" : "Enable";
+                Systray.IsOn = Settings.Default.UseSystemTray;
             };
             Backdrop.SelectionChanged += (_, _) =>
             {
@@ -66,6 +67,12 @@ namespace MicaDiscord
         private void OpenAppFolder(object sender, RoutedEventArgs e)
         {
             Process.Start("powershell", new string[] { "-c", $"Invoke-Item \"{AppDomain.CurrentDomain.BaseDirectory}\"" });
+        }
+
+        private void SystrayToggled(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.UseSystemTray = Systray.IsOn;
+            Settings.Default.Save();
         }
     }
 }
