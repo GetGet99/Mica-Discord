@@ -9,13 +9,14 @@ using System.Drawing;
 using Microsoft.UI.Windowing;
 using Microsoft.UI;
 using Microsoft.Windows.ApplicationModel.DynamicDependency;
-namespace SystemBackdropTypes;
+namespace MicaDiscord;
 
 public partial class MainWindow : Window
 {
-
+    bool DiscordEffectApplied = false;
     void OnLoaded(object sender, RoutedEventArgs e)
     {
+        var TitleBar = AppWindow.TitleBar;
         void RefreshFrame()
         {
             HwndSource mainWindowSrc = HwndSource.FromHwnd(Handle);
@@ -31,8 +32,15 @@ public partial class MainWindow : Window
                 cyTopHeight = Convert.ToInt32(((int)ActualHeight + 5) * (DesktopDpiX / 96)),
                 cyBottomHeight = Convert.ToInt32(5 * (DesktopDpiX / 96))
             });
+            var location1 = TitleTextBlock.TransformToAncestor(this).Transform(new(0, 0));
+            var location2 = TitleBarDragable.TransformToAncestor(this).Transform(new(0, 0));
+            TitleBar.SetDragRectangles(new Windows.Graphics.RectInt32[]
+            {
+                new(_X: 0, 0, (int)(TitleTextBlock.ActualWidth+location1.X), TitleBar.Height),
+                new(_X: (int)location2.X, 0, (int)TitleBarDragable.ActualWidth, TitleBar.Height)
+            });
         }
-        RefreshFrame();
+        
         void RefreshDarkMode() => CustomPInvoke.SetWindowAttribute(
             Handle,
             CustomPInvoke.DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE,
@@ -40,13 +48,17 @@ public partial class MainWindow : Window
         );
         RefreshDarkMode();
         SizeChanged += (_, _) => RefreshFrame();
+        IsVisibleChanged += (_, _) => RefreshFrame();
         ThemeManager.Current.ActualApplicationThemeChanged += (_, _) => RefreshDarkMode();
+        Width += 1;
         
-        SetBackdrop(CustomPInvoke.BackdropType.Mica);
-
+        SetBackdrop((BackdropType)Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType, ignoreCase: true));
+        WebView.CoreWebView2InitializationCompleted += (_, _) => RefreshFrame();
         WebView.NavigationCompleted += delegate
         {
-            WebView.CoreWebView2.ExecuteScriptAsync(@"
+            DiscordEffectApplied = Settings.Default.ReplaceDiscordBackground;
+            if (DiscordEffectApplied)
+                WebView.CoreWebView2.ExecuteScriptAsync(@"
 (function () {
     let s = document.createElement('style');
     s.innerHTML = `
@@ -61,28 +73,39 @@ public partial class MainWindow : Window
 })()
 ".Trim());
         };
-        //var TitleBar = AppWindow.TitleBar;
-        //TitleBar.ExtendsContentIntoTitleBar = true;
-        //TitleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-        //this.TitleBar.Height = TitleBar.Height;
+        
+        TitleBar.ExtendsContentIntoTitleBar = true;
+        TitleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+        TitleBar.ButtonInactiveBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+        this.TitleBar.Height = TitleBar.Height;
+    }
+
+    private void OpenSettings(object sender, RoutedEventArgs e)
+    {
+        DialogPlace.Visibility = Visibility.Visible;
+        WebView.Visibility = Visibility.Hidden;
     }
 }
 public partial class MainWindow : Window
 {
     public MainWindow()
     {
-        Bootstrap.Initialize(0x00010000);
         WindowInteropHelper = new WindowInteropHelper(this);
         InitializeComponent();
         Loaded += OnLoaded;
-
+        SettingsDialog.OnClose += () =>
+        {
+            DialogPlace.Visibility = Visibility.Hidden;
+            WebView.Visibility = Visibility.Visible;
+            if (DiscordEffectApplied != Settings.Default.ReplaceDiscordBackground) WebView.Reload();
+        };
+        SettingsDialog.OnSettingsChanged += () =>
+        {
+            SetBackdrop((BackdropType)Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType, ignoreCase: true));
+        };
     }
-    protected override void OnClosed(EventArgs e)
-    {
-        Bootstrap.Shutdown();
-    }
 
-    void SetBackdrop(CustomPInvoke.BackdropType BackdropType) => SetBackdrop((int)BackdropType);
+    void SetBackdrop(BackdropType BackdropType) => SetBackdrop((int)BackdropType);
     void SetBackdrop(int BackdropType)
     {
         CustomPInvoke.SetWindowAttribute(

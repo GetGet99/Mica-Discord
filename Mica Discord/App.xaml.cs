@@ -5,8 +5,8 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-
-namespace SystemBackdropTypes
+using Microsoft.Windows.ApplicationModel.DynamicDependency;
+namespace MicaDiscord
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -15,6 +15,7 @@ namespace SystemBackdropTypes
     {
         protected override void OnStartup(StartupEventArgs e)
         {
+            Bootstrap.Initialize(0x00010000);
             base.OnStartup(e);
             if (Environment.OSVersion.Version.Build < 22523)
             {
@@ -23,6 +24,11 @@ namespace SystemBackdropTypes
                 return;
             }
             new MainWindow().Show();
+        }
+        protected override void OnExit(ExitEventArgs e)
+        {
+            base.OnExit(e);
+            Bootstrap.Shutdown();
         }
     }
 }

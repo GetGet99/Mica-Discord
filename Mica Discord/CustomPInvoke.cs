@@ -1,8 +1,15 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace SystemBackdropTypes;
+namespace MicaDiscord;
 
+public enum BackdropType
+{
+    Regular = 1,
+    Mica = 2, // Mica
+    Acrylic = 3, // Acrylic
+    Tabbed = 4 // Tabbed
+}
 public class CustomPInvoke
 {
     [Flags]
@@ -13,13 +20,6 @@ public class CustomPInvoke
         DWMSBT_TABBEDWINDOW = 4 // Tabbed
     }
 
-    public enum BackdropType
-    {
-        Regular = 1,
-        Mica = 2, // Mica
-        Acrylic = 3, // Acrylic
-        Tabbed = 4 // Tabbed
-    }
 
     [Flags]
     public enum DWMWINDOWATTRIBUTE

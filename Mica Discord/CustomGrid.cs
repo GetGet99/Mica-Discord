@@ -397,15 +397,15 @@ namespace CustomGrid
     }
     public class CenterBoth : UserControl
     {
-        public new UIElement Content => (UIElement)base.Content;
+        public UIElement UIElementContent => (UIElement)Content;
         public CenterBoth()
         {
 
         }
         protected override Size ArrangeOverride(Size finalSize)
         {
-            Content.Measure(finalSize);
-            Content.Arrange(new Rect((finalSize.Width - Content.DesiredSize.Width) / 2, (finalSize.Height - Content.DesiredSize.Height) / 2, Content.DesiredSize.Width, Content.DesiredSize.Height));
+            UIElementContent.Measure(finalSize);
+            UIElementContent.Arrange(new Rect((finalSize.Width - UIElementContent.DesiredSize.Width) / 2, (finalSize.Height - UIElementContent.DesiredSize.Height) / 2, UIElementContent.DesiredSize.Width, UIElementContent.DesiredSize.Height));
             return finalSize;
         }
         public CenterBoth SetChild(UIElement Element)
