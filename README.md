@@ -25,4 +25,4 @@ If you plan to use this with replace background enabled, I'm not sure if it viol
 `.trim();
     document.head.appendChild(s);
 ```
-If you use this, it's your responsibility if you get banned. But the app is not harmful itself and the security should as safe as other apps using Microsoft Edge WebView2.
+If you use any part of this software, it's your responsibility if you get banned. But the app is not harmful itself and the security should as safe as other apps using Microsoft Edge WebView2.
