@@ -6,7 +6,7 @@ An application with Mica background using transparent-background WebView2 to hos
 As of now, please download the source and compile it yourself since the dev is ~lazy~ I mean busy.
 
 # Disclaimer
-If you plan to use this, I'm not sure if it violates Discord TOS or not. I'm not a lawyer. But here's how it works
+If you plan to use this with replace background enabled, I'm not sure if it violates Discord TOS or not. I'm not a lawyer. But here's how it works
 1. The app itself is basically like a web browser, hosting the web content in WebView2 that points to discord.com
 2. It injects this code.
 ```javascript
