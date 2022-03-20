@@ -59,7 +59,23 @@ public partial class MainWindow : Window
         Width += 1;
         
         SetBackdrop((BackdropType)Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType, ignoreCase: true));
-        WebView.CoreWebView2InitializationCompleted += (_, _) => RefreshFrame();
+        WebView.CoreWebView2InitializationCompleted += (_, _) =>
+        {
+            WebView.CoreWebView2.DocumentTitleChanged += (_, _) =>
+            {
+                var title = WebView.CoreWebView2.DocumentTitle;
+                if (title == "Discord") title = "";
+                Title = $"Mica Discord - {title}";
+                WebsiteTitle.Text = title;
+            };
+            WebView.CoreWebView2.HistoryChanged += delegate
+            {
+                Back.IsEnabled = WebView.CanGoBack;
+                Forward.IsEnabled = WebView.CanGoForward;
+                RefreshFrame();
+            };
+            RefreshFrame();
+        };
         WebView.NavigationCompleted += async delegate
         {
             DiscordEffectApplied = Settings.Default.ReplaceDiscordBackground;
@@ -70,11 +86,12 @@ public partial class MainWindow : Window
     s.innerHTML = `
 *{
     --background-primary: #fff0;
-    --background-secondary: rgba(50,50,50,0.25);
-    --background-secondary-alt: rgba(50,50,50,0.25);
+    --background-secondary: rgba(50,50,50,0.05);
+    --background-secondary-alt: rgba(50,50,50,0.05);
     --background-tertiary: #fff0;
     --background-floating: rgba(50,50,50,0.75);
-    --deprecated-store-bg: rgba(50,50,50,0.25);
+    --deprecated-store-bg: rgba(50,50,50,0.05);
+    --channeltextarea-background: rgba(50,50,50,0.25);
 }
 .theme-dark .container-2cd8Mz {
     background-color: rgba(50,50,50,0.25);
@@ -100,13 +117,23 @@ public partial class MainWindow : Window
         TitleBar.ExtendsContentIntoTitleBar = true;
         TitleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
         TitleBar.ButtonInactiveBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+        TitleBar.ButtonHoverBackgroundColor = Windows.UI.Color.FromArgb(255 / 10, 255, 255, 255);
+        TitleBarUI.Margin = new Thickness(0, 0, (SystemParameters.WindowCaptionButtonWidth+10) * 3, 0);
         this.TitleBar.Height = TitleBar.Height;
     }
-
+    
     private void OpenSettings(object sender, RoutedEventArgs e)
     {
         DialogPlace.Visibility = Visibility.Visible;
         WebView.Visibility = Visibility.Hidden;
+    }
+
+    private void RefreshPage(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            WebView.Reload();
+        } catch { }
     }
 }
 public partial class MainWindow : Window
@@ -128,6 +155,15 @@ public partial class MainWindow : Window
             SetBackdrop((BackdropType)Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType, ignoreCase: true));
         };
         Icon = ImageSourceFromBitmap(ProgramResources.Logo);
+        Back.Click += (_, _) =>
+        {
+            if (WebView.CanGoBack) WebView.GoBack();
+        };
+        Forward.Click += (_, _) =>
+        {
+            if (WebView.CanGoForward) WebView.GoForward();
+        };
+        
     }
     public static ImageSource ImageSourceFromBitmap(Bitmap bmp)
     {

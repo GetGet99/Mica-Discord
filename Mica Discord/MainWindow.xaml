@@ -10,16 +10,67 @@
         Title="Mica Discord"
         d:DesignHeight="450" d:DesignWidth="800"
         d:Background="DimGray"
-        xmlns:cg="clr-namespace:CustomGrid">
+        xmlns:cg="clr-namespace:CustomGrid"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        >
+    <Window.Resources>
+        <ControlTemplate x:Key="NoDisabledBackground" TargetType="{x:Type Button}">
+            <Border BorderBrush="Transparent" x:Name="Border" Padding="10" Background="Transparent">
+                <ContentPresenter />
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter TargetName="Border" Property="Background">
+                        <Setter.Value>
+                            <SolidColorBrush Color="Transparent"></SolidColorBrush>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter TargetName="Border" Property="Opacity">
+                        <Setter.Value>
+                            0.5
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Border" Property="Background">
+                        <Setter.Value>
+                            <SolidColorBrush>
+                                <SolidColorBrush.Color>
+                                    <Color A="25" R="255" G="255" B="255"/>
+                                </SolidColorBrush.Color>
+                            </SolidColorBrush>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+    </Window.Resources>
 
     <cg:Overlay>
         <cg:RowGrid>
-            <cg:ColumnGrid x:Name="TitleBar" cg:CustomGrid.GridType="Auto" Height="30">
-                <!--Height here is temperary height for design time-->
-                <TextBlock x:Name="TitleTextBlock" Margin="10,10,10,10" VerticalAlignment="Center" Foreground="White" cg:CustomGrid.GridType="Auto">Mica Discord</TextBlock>
-                <Button VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="White" Click="OpenSettings">Settings</Button>
-                <Grid x:Name="TitleBarDragable"></Grid>
-            </cg:ColumnGrid>
+            <cg:Overlay cg:CustomGrid.GridType="Auto" Height="30" x:Name="TitleBar">
+                <Border Background="White" Opacity="0.1"></Border>
+                <cg:ColumnGrid x:Name="TitleBarUI">
+                    <!--Height here is temperary height for design time-->
+                    <TextBlock x:Name="TitleTextBlock" Margin="10,10,10,10" VerticalAlignment="Center" Foreground="White" cg:CustomGrid.GridType="Auto">Mica Discord</TextBlock>
+                    <Button x:Name="Back" Template="{StaticResource NoDisabledBackground}" VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="White" Background="Transparent" Width="50" Height="50">
+                        <ui:SymbolIcon Symbol="Back" Foreground="White"></ui:SymbolIcon>
+                    </Button>
+                    <Button x:Name="Forward" Template="{StaticResource NoDisabledBackground}" VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="White" Background="Transparent" Width="50" Height="50">
+                        <ui:SymbolIcon Symbol="Forward" Foreground="White"></ui:SymbolIcon>
+                    </Button>
+                    <Button VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="White" Background="Transparent" Width="50" Height="50" Click="RefreshPage">
+                        <ui:SymbolIcon Symbol="Refresh" Foreground="White"></ui:SymbolIcon>
+                    </Button>
+                    
+                    <Grid x:Name="TitleBarDragable" Height="50" VerticalAlignment="Center">
+                        <TextBlock x:Name="WebsiteTitle" Margin="10,10,10,10" VerticalAlignment="Center" Foreground="White" cg:CustomGrid.GridType="Auto"></TextBlock>
+                    </Grid>
+                    <Button VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="White" Background="Transparent" Click="OpenSettings" Width="50" Height="50">
+                        <ui:SymbolIcon Symbol="Setting" Foreground="White"></ui:SymbolIcon>
+                    </Button>
+                </cg:ColumnGrid>
+            </cg:Overlay>
             <wv2:WebView2 x:Name="WebView"
                   Source="https://discord.com/channels/@me"
                       DefaultBackgroundColor="Transparent"
