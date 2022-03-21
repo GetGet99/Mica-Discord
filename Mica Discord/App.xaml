@@ -1,17 +1,38 @@
-﻿<Application x:Class="MicaDiscord.App"
+﻿<Application x:Class="BlankWPF.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:ui="http://schemas.modernwpf.com/2019"
-             xmlns:local="clr-namespace:MicaDiscord">
+             xmlns:local="clr-namespace:BlankWPF"
+             StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ui:ThemeResources />
-                <ui:XamlControlsResources />
-                <!--<ResourceDictionary>
-                    <SolidColorBrush x:Name="DefaultForeground" Color="{ui:ThemeResource Dark}"></SolidColorBrush>
-                </ResourceDictionary>-->
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
+        <ControlTemplate x:Key="NoDisabledBackground" TargetType="{x:Type Button}">
+            <Border BorderBrush="Transparent" x:Name="Border" Padding="10" Background="Transparent">
+                <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter TargetName="Border" Property="Background">
+                        <Setter.Value>
+                            <SolidColorBrush Color="Transparent"></SolidColorBrush>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter TargetName="Border" Property="Opacity">
+                        <Setter.Value>
+                            0.5
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Border" Property="Background">
+                        <Setter.Value>
+                            <SolidColorBrush>
+                                <SolidColorBrush.Color>
+                                    <Color A="25" R="255" G="255" B="255"/>
+                                </SolidColorBrush.Color>
+                            </SolidColorBrush>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
     </Application.Resources>
 </Application>

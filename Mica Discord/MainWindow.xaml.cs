@@ -3,12 +3,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Interop;
-using ModernWpf;
+//using ModernWpf;
 using PInvoke;
 using System.Drawing;
-using Microsoft.UI.Windowing;
-using Microsoft.UI;
-using Microsoft.Windows.ApplicationModel.DynamicDependency;
+//using Microsoft.UI;
 using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 
@@ -17,12 +15,9 @@ namespace MicaDiscord;
 public partial class MainWindow : Window
 {
     bool DiscordEffectApplied = false;
-    //If you get 'dllimport unknown'-, then add 'using System.Runtime.InteropServices;'
-    
 
     void OnLoaded(object sender, RoutedEventArgs e)
     {
-        var TitleBar = AppWindow.TitleBar;
         void RefreshFrame()
         {
             HwndSource mainWindowSrc = HwndSource.FromHwnd(Handle);
@@ -40,11 +35,6 @@ public partial class MainWindow : Window
             });
             var location1 = TitleTextBlock.TransformToAncestor(this).Transform(new(0, 0));
             var location2 = TitleBarDragable.TransformToAncestor(this).Transform(new(0, 0));
-            TitleBar.SetDragRectangles(new Windows.Graphics.RectInt32[]
-            {
-                new(_X: 0, 0, (int)(TitleTextBlock.ActualWidth+location1.X), TitleBar.Height),
-                new(_X: (int)location2.X, 0, (int)TitleBarDragable.ActualWidth, TitleBar.Height)
-            });
         }
         
         void RefreshDarkMode() => CustomPInvoke.SetWindowAttribute(
@@ -55,7 +45,7 @@ public partial class MainWindow : Window
         RefreshDarkMode();
         SizeChanged += (_, _) => RefreshFrame();
         IsVisibleChanged += (_, _) => RefreshFrame();
-        ThemeManager.Current.ActualApplicationThemeChanged += (_, _) => RefreshDarkMode();
+        //ThemeManager.Current.ActualApplicationThemeChanged += (_, _) => RefreshDarkMode();
         Width += 1;
         
         SetBackdrop((BackdropType)Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType, ignoreCase: true));
@@ -114,12 +104,8 @@ public partial class MainWindow : Window
             }
         };
         
-        TitleBar.ExtendsContentIntoTitleBar = true;
-        TitleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-        TitleBar.ButtonInactiveBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-        TitleBar.ButtonHoverBackgroundColor = Windows.UI.Color.FromArgb(255 / 10, 255, 255, 255);
-        TitleBarUI.Margin = new Thickness(0, 0, (SystemParameters.WindowCaptionButtonWidth+10) * 3, 0);
-        this.TitleBar.Height = TitleBar.Height;
+        //TitleBarUI.Margin = new Thickness(0, 0, (SystemParameters.WindowCaptionButtonWidth+10) * 3, 0);
+        //this.TitleBar.Height = TitleBar.Height;
     }
     
     private void OpenSettings(object sender, RoutedEventArgs e)
@@ -154,7 +140,7 @@ public partial class MainWindow : Window
         {
             SetBackdrop((BackdropType)Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType, ignoreCase: true));
         };
-        Icon = ImageSourceFromBitmap(ProgramResources.Logo);
+        //Icon = ImageSourceFromBitmap(ProgramResources.Logo);
         Back.Click += (_, _) =>
         {
             if (WebView.CanGoBack) WebView.GoBack();
@@ -186,7 +172,5 @@ public partial class MainWindow : Window
 
     public WindowInteropHelper WindowInteropHelper { get; }
     public IntPtr Handle => WindowInteropHelper.Handle;
-    public WindowId Id => Win32Interop.GetWindowIdFromWindow(Handle);
-    public AppWindow AppWindow => AppWindow.GetFromWindowId(Id);
 
 }

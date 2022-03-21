@@ -6,7 +6,6 @@
              xmlns:local="clr-namespace:MicaDiscord"
              mc:Ignorable="d" 
              xmlns:cg="clr-namespace:CustomGrid"
-             xmlns:ui="http://schemas.modernwpf.com/2019"
              Height="450" Width="800"
              d:Background="DimGray"
       >
@@ -16,15 +15,15 @@
             <cg:RowGrid Margin="20">
                 <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">
                     <Label Foreground="White" VerticalAlignment="Center" FontSize="18" FontFamily="Calibri Light">Settings</Label>
-                    <Button cg:CustomGrid.GridType="Auto" VerticalAlignment="Center" Width="40" Height="40" Click="CloseDialog">
-                        <ui:SymbolIcon Symbol="Cancel" Foreground="White"></ui:SymbolIcon>
+                    <Button Template="{StaticResource NoDisabledBackground}" cg:CustomGrid.GridType="Auto" VerticalAlignment="Center" Width="40" Height="40" Click="CloseDialog" Foreground="White">
+                        X
                     </Button>
                 </cg:ColumnGrid>
                 <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">
                     <Label Foreground="White" VerticalAlignment="Center">
                         Backdrop
                     </Label>
-                    <ComboBox cg:CustomGrid.GridType="Auto" VerticalAlignment="Center" x:Name="Backdrop">
+                    <ComboBox cg:CustomGrid.GridType="Auto" VerticalAlignment="Center" x:Name="Backdrop" Background="#3fff" BorderBrush="#00000000" Style="{StaticResource {x:Static ToolBar.ComboBoxStyleKey}}" Foreground="White">
                         <ComboBox.ItemsSource>
                             <x:Array Type="local:BackdropType">
                                 <local:BackdropType>Regular</local:BackdropType>
@@ -39,7 +38,7 @@
                     <Label Foreground="White" VerticalAlignment="Center">
                         Replace Discord Background
                     </Label>
-                    <Button cg:CustomGrid.GridType="Auto" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" x:Name="ReplaceBackgroundToggle">
+                    <Button Template="{StaticResource NoDisabledBackground}" cg:CustomGrid.GridType="Auto" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" x:Name="ReplaceBackgroundToggle">
                         Enable
                     </Button>
                 </cg:ColumnGrid>
@@ -47,18 +46,17 @@
                     <Label Foreground="White" VerticalAlignment="Center">
                         Minimized to system tray (requires restart)
                     </Label>
-                    <ui:ToggleSwitch
+                    <CheckBox
                         x:Name="Systray"
                         cg:CustomGrid.GridType="Auto"
                         Foreground="White"
                         VerticalAlignment="Center"
-                        OffContent=""
-                        OnContent=""
-                        Margin="0,0,-110,0"
-                        Toggled="SystrayToggled">
-                    </ui:ToggleSwitch>
+                        Margin="10"
+                        Checked="SystrayToggled"
+                        Unchecked="SystrayToggled">
+                    </CheckBox>
                 </cg:ColumnGrid>
-                <Button cg:CustomGrid.GridType="Auto" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" Click="OpenAppFolder">
+                <Button Template="{StaticResource NoDisabledBackground}" cg:CustomGrid.GridType="Auto" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" Click="OpenAppFolder">
                     Open App Location Folder
                 </Button>
             </cg:RowGrid>
