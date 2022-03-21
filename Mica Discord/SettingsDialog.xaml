@@ -9,6 +9,16 @@
              Height="450" Width="800"
              d:Background="DimGray"
       >
+    <Grid.Resources>
+        <DrawingImage x:Key="X_lg">
+            <DrawingImage.Drawing>
+                <DrawingGroup ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+                    <GeometryDrawing Brush="#FFFFFFFF" Geometry="F0 M16,16z M0,0z M13.854,2.146A0.5,0.5,0,0,1,13.854,2.854L2.854,13.854A0.5,0.5,0,0,1,2.146,13.146L13.146,2.146A0.5,0.5,0,0,1,13.854,2.146z" />
+                    <GeometryDrawing Brush="#FFFFFFFF" Geometry="F0 M16,16z M0,0z M2.146,2.146A0.5,0.5,0,0,0,2.146,2.854L13.146,13.854A0.5,0.5,0,0,0,13.854,13.146L2.854,2.146A0.5,0.5,0,0,0,2.146,2.146z" />
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+    </Grid.Resources>
     <Border CornerRadius="30" BorderBrush="White">
         <cg:Overlay>
             <Border Background="#505050" Opacity="0.25"></Border>
@@ -16,7 +26,7 @@
                 <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">
                     <Label Foreground="White" VerticalAlignment="Center" FontSize="18" FontFamily="Calibri Light">Settings</Label>
                     <Button Template="{StaticResource NoDisabledBackground}" cg:CustomGrid.GridType="Auto" VerticalAlignment="Center" Width="40" Height="40" Click="CloseDialog" Foreground="White">
-                        X
+                        <Image Source="{StaticResource X_lg}"/>
                     </Button>
                 </cg:ColumnGrid>
                 <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">

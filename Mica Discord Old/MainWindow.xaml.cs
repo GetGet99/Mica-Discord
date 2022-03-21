@@ -103,7 +103,6 @@ public partial class MainWindow : Window
                 Hide();
             }
         };
-        
         //TitleBarUI.Margin = new Thickness(0, 0, (SystemParameters.WindowCaptionButtonWidth+10) * 3, 0);
         //this.TitleBar.Height = TitleBar.Height;
     }

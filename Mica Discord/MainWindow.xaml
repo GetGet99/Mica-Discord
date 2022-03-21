@@ -11,9 +11,73 @@
         d:DesignHeight="450" d:DesignWidth="800"
         d:Background="DimGray"
         xmlns:cg="clr-namespace:CustomGrid"
-        xmlns:ui="http://schemas.modernwpf.com/2019"
-        >
-
+        xmlns:ui="http://schemas.modernwpf.com/2019">
+    <Window.Resources>
+        <DrawingImage x:Key="ArrowLeft">
+            <DrawingImage.Drawing>
+                <DrawingGroup ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+                    <GeometryDrawing Brush="#FFFFFFFF" Geometry="F0 M16,16z M0,0z M15,8A0.5,0.5,0,0,0,14.5,7.5L2.707,7.5 5.854,4.354A0.5,0.5,0,1,0,5.146,3.646L1.146,7.646A0.5,0.5,0,0,0,1.146,8.354L5.146,12.354A0.5,0.5,0,0,0,5.854,11.646L2.707,8.5 14.5,8.5A0.5,0.5,0,0,0,15,8z" />
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+        <DrawingImage x:Key="ArrowRight">
+            <DrawingImage.Drawing>
+                <DrawingGroup ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+                    <GeometryDrawing Brush="#FFFFFFFF" Geometry="F0 M16,16z M0,0z M1,8A0.5,0.5,0,0,1,1.5,7.5L13.293,7.5 10.146,4.354A0.5,0.5,0,0,1,10.854,3.646L14.854,7.646A0.5,0.5,0,0,1,14.854,8.354L10.854,12.354A0.5,0.5,0,0,1,10.146,11.646L13.293,8.5 1.5,8.5A0.5,0.5,0,0,1,1,8z" />
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+        <DrawingImage x:Key="Reload">
+            <DrawingImage.Drawing>
+                <DrawingGroup ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+                    <GeometryDrawing Brush="#FFFFFFFF" Geometry="F0 M16,16z M0,0z M8,3A5,5,0,1,0,12.546,5.914A0.5,0.5,0,0,1,13.454,5.497A6,6,0,1,1,8,2L8,3z" />
+                    <GeometryDrawing Brush="#FFFFFFFF" Geometry="F1 M16,16z M0,0z M8,4.466L8,0.534A0.25,0.25,0,0,1,8.41,0.342L10.77,2.308C10.89,2.408,10.89,2.592,10.77,2.692L8.41,4.658A0.25,0.25,0,0,1,8,4.466z" />
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+        <DrawingImage x:Key="Gear">
+            <DrawingImage.Drawing>
+                <DrawingGroup ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+                    <DrawingGroup.Transform>
+                        <TranslateTransform X="7.4505805969238281E-09" Y="7.4505805969238281E-09" />
+                    </DrawingGroup.Transform>
+                    <GeometryDrawing Brush="#FFFFFFFF" Geometry="F1 M16,16z M0,0z M9.405,1.05C8.992,-0.35,7.008,-0.35,6.595,1.05L6.495,1.39A1.464,1.464,0,0,1,4.39,2.262L4.08,2.092C2.797,1.394,1.394,2.797,2.093,4.079L2.262,4.39C2.708,5.21,2.285,6.231,1.39,6.495L1.05,6.595C-0.350000000000001,7.008,-0.350000000000001,8.992,1.05,9.405L1.39,9.505A1.464,1.464,0,0,1,2.262,11.61L2.092,11.92C1.394,13.203,2.797,14.606,4.079,13.907L4.39,13.738A1.464,1.464,0,0,1,6.495,14.61L6.595,14.95C7.008,16.35,8.992,16.35,9.405,14.95L9.505,14.61A1.464,1.464,0,0,1,11.61,13.738L11.92,13.908C13.203,14.606,14.606,13.203,13.907,11.921L13.738,11.61A1.464,1.464,0,0,1,14.61,9.505L14.95,9.405C16.35,8.992,16.35,7.008,14.95,6.595L14.61,6.495A1.464,1.464,0,0,1,13.738,4.39L13.908,4.08C14.606,2.797,13.203,1.394,11.921,2.093L11.61,2.262A1.464,1.464,0,0,1,9.505,1.39L9.405,1.05z M8,10.93A2.929,2.929,0,1,1,8,5.07A2.929,2.929,0,0,1,8,10.928z" />
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+        <Style x:Key="{x:Type Window}"
+       TargetType="{x:Type Window}">
+            <Setter Property="SnapsToDevicePixels"
+          Value="true" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Window}">
+                        <Grid>
+                            <Grid.Background>
+                                <SolidColorBrush Color="{DynamicResource WindowColor}"/>
+                            </Grid.Background>
+                            <AdornerDecorator>
+                                <ContentPresenter />
+                            </AdornerDecorator>
+                            <ResizeGrip x:Name="WindowResizeGrip"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Bottom"
+                      Visibility="Collapsed"
+                      IsTabStop="false" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="ResizeMode"
+                   Value="CanResizeWithGrip">
+                                <Setter TargetName="WindowResizeGrip"
+                    Property="Visibility"
+                    Value="Visible" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
     <cg:Overlay>
         <cg:RowGrid>
             <cg:Overlay cg:CustomGrid.GridType="Auto" Height="30" x:Name="TitleBar">
@@ -21,21 +85,21 @@
                 <cg:ColumnGrid x:Name="TitleBarUI">
                     <!--Height here is temperary height for design time-->
                     <TextBlock x:Name="TitleTextBlock" Margin="10,10,10,10" VerticalAlignment="Center" Foreground="White" cg:CustomGrid.GridType="Auto">Mica Discord</TextBlock>
-                    <Button x:Name="Back" Template="{StaticResource NoDisabledBackground}" VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="White" Background="Transparent" Width="50" Height="50">
-                        B
+                    <Button x:Name="Back" Template="{StaticResource NoDisabledBackground}" VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="White" Background="Transparent" Width="40" Height="40">
+                        <Image Source="{StaticResource ArrowLeft}" Width="20" Height="30"/>
                     </Button>
-                    <Button x:Name="Forward" Template="{StaticResource NoDisabledBackground}" VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="White" Background="Transparent" Width="50" Height="50">
-                        F
+                    <Button x:Name="Forward" Template="{StaticResource NoDisabledBackground}" VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="White" Background="Transparent" Width="40" Height="40">
+                        <Image Source="{StaticResource ArrowRight}" Width="20" Height="30"/>
                     </Button>
-                    <Button Template="{StaticResource NoDisabledBackground}" VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="White" Background="Transparent" Width="50" Height="50" Click="RefreshPage">
-                        R
+                    <Button Template="{StaticResource NoDisabledBackground}" VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="White" Background="Transparent" Width="40" Height="40" Click="RefreshPage">
+                        <Image Source="{StaticResource Reload}" Width="20" Height="30"/>
                     </Button>
                     
                     <Grid x:Name="TitleBarDragable" Height="50" VerticalAlignment="Center">
                         <TextBlock x:Name="WebsiteTitle" Margin="10,10,10,10" VerticalAlignment="Center" Foreground="White" cg:CustomGrid.GridType="Auto"></TextBlock>
                     </Grid>
                     <Button Template="{StaticResource NoDisabledBackground}" VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="White" Background="Transparent" Click="OpenSettings" Width="50" Height="50">
-                        Settings<!--<ui:SymbolIcon Symbol="Setting" Foreground="White"></ui:SymbolIcon>-->
+                        <Image Source="{StaticResource Gear}" Width="20" Height="30"/>
                     </Button>
                 </cg:ColumnGrid>
             </cg:Overlay>
