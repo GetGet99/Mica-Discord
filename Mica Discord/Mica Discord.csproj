@@ -8,11 +8,28 @@
     <AssemblyName>MicaDiscord</AssemblyName>
     <RootNamespace>MicaDiscord</RootNamespace>
     <Version>1.4.0</Version>
+    <UseWindowsForms>True</UseWindowsForms>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Remove="App.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1150.38" />
     <PackageReference Include="PInvoke.DwmApi" Version="0.7.104" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Update="App.xaml">
+      <CustomToolNamespace>MicaDiscord</CustomToolNamespace>
+    </ApplicationDefinition>
   </ItemGroup>
 
   <ItemGroup>

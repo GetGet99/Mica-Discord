@@ -66,6 +66,20 @@
                         Unchecked="SystrayToggled">
                     </CheckBox>
                 </cg:ColumnGrid>
+                <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">
+                    <Label Foreground="White" VerticalAlignment="Center">
+                        Use Light Color in Dark Mode
+                    </Label>
+                    <CheckBox
+                        x:Name="ModeAwareCSS"
+                        cg:CustomGrid.GridType="Auto"
+                        Foreground="White"
+                        VerticalAlignment="Center"
+                        Margin="10"
+                        Checked="ModeAwareCSSToggled"
+                        Unchecked="ModeAwareCSSToggled">
+                    </CheckBox>
+                </cg:ColumnGrid>
                 <Button Template="{StaticResource NoDisabledBackground}" cg:CustomGrid.GridType="Auto" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" Click="OpenAppFolder">
                     Open App Location Folder
                 </Button>

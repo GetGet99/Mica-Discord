@@ -3,18 +3,21 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Interop;
-//using ModernWpf;
 using PInvoke;
 using System.Drawing;
-//using Microsoft.UI;
 using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
+using System.Windows.Shell;
 
 namespace MicaDiscord;
 
 public partial class MainWindow : Window
 {
     bool DiscordEffectApplied = false;
+    bool Dark
+    {
+        set => (Resources["Color"] as SolidColorBrush ?? throw new NullReferenceException()).Color = value ? Colors.White : Colors.Black;
+    }
 
     void OnLoaded(object sender, RoutedEventArgs e)
     {
@@ -28,21 +31,28 @@ public partial class MainWindow : Window
 
             DwmApi.DwmExtendFrameIntoClientArea(Handle, new()
             {
-                cxLeftWidth = Convert.ToInt32(5 * (DesktopDpiX / 96)),
-                cxRightWidth = Convert.ToInt32(5 * (DesktopDpiX / 96)),
-                cyTopHeight = Convert.ToInt32(((int)ActualHeight + 5) * (DesktopDpiX / 96)),
-                cyBottomHeight = Convert.ToInt32(5 * (DesktopDpiX / 96))
+                cxLeftWidth = -1,
+                cxRightWidth = -1,
+                cyTopHeight = -1,
+                cyBottomHeight = -1,
             });
+            //new()
+            //{
+            //    cxLeftWidth = Convert.ToInt32(5 * (DesktopDpiX / 96)),
+            //    cxRightWidth = Convert.ToInt32(5 * (DesktopDpiX / 96)),
+            //    cyTopHeight = Convert.ToInt32(((int)ActualHeight + 5) * (DesktopDpiX / 96)),
+            //    cyBottomHeight = Convert.ToInt32(5 * (DesktopDpiX / 96))
+            //}
             var location1 = TitleTextBlock.TransformToAncestor(this).Transform(new(0, 0));
             var location2 = TitleBarDragable.TransformToAncestor(this).Transform(new(0, 0));
         }
         
-        void RefreshDarkMode() => CustomPInvoke.SetWindowAttribute(
+        void RefreshDarkMode(bool dark) => CustomPInvoke.SetWindowAttribute(
             Handle,
             CustomPInvoke.DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE,
-            1 // Always dark as of now, or you can change to: ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Dark ? 1 : 0
+            dark ? 1 : 0 // Always dark as of now, or you can change to: ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Dark ? 1 : 0
         );
-        RefreshDarkMode();
+        RefreshDarkMode(dark: true);
         SizeChanged += (_, _) => RefreshFrame();
         IsVisibleChanged += (_, _) => RefreshFrame();
         //ThemeManager.Current.ActualApplicationThemeChanged += (_, _) => RefreshDarkMode();
@@ -70,30 +80,39 @@ public partial class MainWindow : Window
         {
             DiscordEffectApplied = Settings.Default.ReplaceDiscordBackground;
             if (DiscordEffectApplied)
-                await WebView.CoreWebView2.ExecuteScriptAsync(@"
-(function () {
+            {
+
+                var Dark = (await WebView.CoreWebView2.ExecuteScriptAsync("document.getElementsByTagName('html')[0].classList.contains('theme-dark')")) == "true";
+                RefreshDarkMode(dark: Dark);
+                this.Dark = Dark;
+                var LightColorCSS = Dark && Settings.Default.ModeAwareCSS;
+                var invc = LightColorCSS ? 250 : 0;
+                var regc = LightColorCSS ? 0 : 255;
+                await WebView.CoreWebView2.ExecuteScriptAsync($@"
+(function () {{
     let s = document.createElement('style');
     s.innerHTML = `
-*{
-    --background-primary: #fff0;
-    --background-secondary: rgba(50,50,50,0.05);
-    --background-secondary-alt: rgba(50,50,50,0.05);
-    --background-tertiary: #fff0;
-    --background-floating: rgba(50,50,50,0.75);
-    --deprecated-store-bg: rgba(50,50,50,0.05);
-    --channeltextarea-background: rgba(50,50,50,0.25);
-}
-.theme-dark .container-2cd8Mz {
-    background-color: rgba(50,50,50,0.25);
-}
+*{{
+    --background-primary: #0000;
+    --background-secondary: rgba({invc},{invc},{invc},0.05);
+    --background-secondary-alt: rgba({invc},{invc},{invc},0.05);
+    --background-tertiary: #0000;
+    --background-floating: rgba({regc},{regc},{regc},0.75);
+    --deprecated-store-bg: rgba({invc},{invc},{invc},0.05);
+    --channeltextarea-background: rgba({invc},{invc},{invc},0.25);
+}}
+.container-2cd8Mz {{
+    background-color: rgba({invc},{invc},{invc},0.05) !important;
+}}
 
-.callContainer-HtHELf {
-    background-color: rgba(50,50,50,0);
-}
+.callContainer-HtHELf {{
+    background-color: rgba({regc},{regc},{regc},0);
+}}
 `.trim();
     document.head.appendChild(s);
-})()
+}})()
 ".Trim());
+            }
         };
         Closing += (_, e) =>
         {
@@ -134,7 +153,8 @@ public partial class MainWindow : Window
         {
             DialogPlace.Visibility = Visibility.Hidden;
             WebView.Visibility = Visibility.Visible;
-            if (DiscordEffectApplied != Settings.Default.ReplaceDiscordBackground) WebView.Reload();
+            if (DiscordEffectApplied != Settings.Default.ReplaceDiscordBackground)
+                WebView.Reload();
         };
         SettingsDialog.OnSettingsChanged += () =>
         {
@@ -149,8 +169,28 @@ public partial class MainWindow : Window
         {
             if (WebView.CanGoForward) WebView.GoForward();
         };
-        
+        SizeChanged += (_, _) =>
+        {
+            if (WindowState == WindowState.Maximized)
+            {
+                TitleBar.Margin = new Thickness(7.5, 7.5, 0, 0);
+            } else
+            {
+                TitleBar.Margin = new Thickness(0);
+            }
+        };
+        SetValue(WindowChrome.WindowChromeProperty, WindowChrome);
+        WindowChrome.SetIsHitTestVisibleInChrome(Back, true);
+        WindowChrome.SetIsHitTestVisibleInChrome(Forward, true);
+        WindowChrome.SetIsHitTestVisibleInChrome(Reload, true);
+        WindowChrome.SetIsHitTestVisibleInChrome(Setting, true);
+        using var g = Graphics.FromImage(new Bitmap(1, 1));
+        var dpix = g.DpiX;
     }
+    WindowChrome WindowChrome { get; } = new WindowChrome
+    {
+        UseAeroCaptionButtons = true
+    };
     public static ImageSource ImageSourceFromBitmap(Bitmap bmp)
     {
         var handle = bmp.GetHbitmap();

@@ -74,4 +74,9 @@ public partial class SettingsDialog : Grid
         Settings.Default.UseSystemTray = Systray.IsChecked ?? false;
         Settings.Default.Save();
     }
+    private void ModeAwareCSSToggled(object sender, RoutedEventArgs e)
+    {
+        Settings.Default.ModeAwareCSS = ModeAwareCSS.IsChecked ?? false;
+        Settings.Default.Save();
+    }
 }
