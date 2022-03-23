@@ -21,14 +21,22 @@ namespace MicaDiscord;
 /// </summary>
 public partial class SettingsDialog : Grid
 {
+    public bool RequiresReload { get; private set; } = false;
     public SettingsDialog()
     {
         InitializeComponent();
+        if (!MainWindow.NotSupportedBuild) OSWarning.Visibility = Visibility.Collapsed;
         IsVisibleChanged += (_, _) =>
         {
-            Backdrop.SelectedItem = Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType);
-            ReplaceBackgroundToggle.Content = Settings.Default.ReplaceDiscordBackground ? "Disable" : "Enable";
-            Systray.IsChecked = Settings.Default.UseSystemTray;
+            if (IsVisible)
+            {
+                RequiresReload = false;
+                Backdrop.SelectedItem = Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType);
+                ReplaceBackgroundToggle.Content = Settings.Default.ReplaceDiscordBackground ? "Disable" : "Enable";
+                UseBackdropAnyway.Content = Settings.Default.UseBackdropAnyway ? "Use Solid Color" : "Enable Anyway";
+                Systray.IsChecked = Settings.Default.UseSystemTray;
+                ModeAwareCSS.IsChecked = Settings.Default.ModeAwareCSS;
+            }
         };
         Backdrop.SelectionChanged += (_, _) =>
         {
@@ -58,6 +66,28 @@ public partial class SettingsDialog : Grid
             ReplaceBackgroundToggle.Content = newValue ? "Disable" : "Enable";
             Settings.Default.Save();
             OnSettingsChanged?.Invoke();
+            RequiresReload = true;
+        };
+        UseBackdropAnyway.Click += (_, _) =>
+        {
+            bool newValue = !Settings.Default.UseBackdropAnyway;
+            if (newValue)
+            {
+                if (MessageBox.Show(
+
+                    caption: "Warning",
+                    messageBoxText: "This might cause an unexpected behavior if your build does not support the feature!",
+                    button: MessageBoxButton.YesNo,
+                    icon: MessageBoxImage.Warning
+                    )
+                != MessageBoxResult.Yes)
+                    return;
+            }
+            Settings.Default.UseBackdropAnyway = newValue;
+            UseBackdropAnyway.Content = newValue ? "Use Solid Color" : "Enable Anyway";
+            Settings.Default.Save();
+            OnSettingsChanged?.Invoke();
+            RequiresReload = true;
         };
     }
     public event Action? OnClose;
@@ -78,5 +108,6 @@ public partial class SettingsDialog : Grid
     {
         Settings.Default.ModeAwareCSS = ModeAwareCSS.IsChecked ?? false;
         Settings.Default.Save();
+        RequiresReload = true;
     }
 }

@@ -18,7 +18,7 @@ namespace CustomGrid
         {
             Background = Brushes.Transparent;
         }
-        public IEnumerable<UIElement> ChildrenAsElements => Enumerable.Cast<UIElement>(Children);
+        public IEnumerable<UIElement> ChildrenAsElements => Enumerable.Cast<UIElement>(Children).Where(Element => Element.Visibility != Visibility.Collapsed);
         public static readonly DependencyProperty GridTypeProperty = DependencyProperty.Register(
             "GridType",
             typeof(GridType),

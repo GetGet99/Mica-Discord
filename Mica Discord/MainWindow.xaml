@@ -83,7 +83,7 @@
     <cg:Overlay>
         <cg:RowGrid>
             <cg:Overlay cg:CustomGrid.GridType="Auto" Height="30" x:Name="TitleBar">
-                <Border Background="{DynamicResource Color}" Opacity="0.1"></Border>
+                <Border Background="{DynamicResource Color}" Opacity="0"></Border>
                 <cg:ColumnGrid x:Name="TitleBarUI">
                     <!--Height here is temperary height for design time-->
                     <TextBlock x:Name="TitleTextBlock" Margin="10,10,10,10" VerticalAlignment="Center" Foreground="{DynamicResource Color}" cg:CustomGrid.GridType="Auto">Mica Discord</TextBlock>
@@ -96,7 +96,7 @@
                     <Button x:Name="Reload" Template="{StaticResource NoDisabledBackground}" VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="{DynamicResource Color}" Background="Transparent" Width="40" Height="40" Click="RefreshPage">
                         <Image Source="{StaticResource Reload}" Width="20" Height="30"/>
                     </Button>
-                    <Button x:Name="Setting" Template="{StaticResource NoDisabledBackground}" VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="{DynamicResource Color}" Background="Transparent" Click="OpenSettings" Width="50" Height="50">
+                    <Button x:Name="Setting" Template="{StaticResource NoDisabledBackground}" VerticalAlignment="Center" cg:CustomGrid.GridType="Auto" Foreground="{DynamicResource Color}" Background="Transparent" Click="OpenSettings" Width="40" Height="40">
                         <Image Source="{StaticResource Gear}" Width="20" Height="30"/>
                     </Button>
                     <Grid x:Name="TitleBarDragable" Height="50" VerticalAlignment="Center">

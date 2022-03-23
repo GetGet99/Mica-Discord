@@ -44,6 +44,17 @@
                         </ComboBox.ItemsSource>
                     </ComboBox>
                 </cg:ColumnGrid>
+                <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40" x:Name="OSWarning">
+                    <cg:ColumnGrid.Background>
+                        <SolidColorBrush Color="Yellow" Opacity="0.5"/>
+                    </cg:ColumnGrid.Background>
+                    <Label Foreground="White" VerticalAlignment="Center">
+                        Warning: Your OS Build is less than 22523. Backdrop might not work properly.
+                    </Label>
+                    <Button Template="{StaticResource NoDisabledBackground}" cg:CustomGrid.GridType="Auto" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" x:Name="UseBackdropAnyway">
+                        Enable Anyway
+                    </Button>
+                </cg:ColumnGrid>
                 <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">
                     <Label Foreground="White" VerticalAlignment="Center">
                         Replace Discord Background

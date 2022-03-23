@@ -9,10 +9,23 @@
     <RootNamespace>MicaDiscord</RootNamespace>
     <Version>1.5.0</Version>
     <UseWindowsForms>True</UseWindowsForms>
+    <PackageIcon>DiscordLogo.png</PackageIcon>
+    <ApplicationIcon>DiscordLogo.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <ApplicationDefinition Remove="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="DiscordLogo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="E:\.SysFolder\Downloads\DiscordLogo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

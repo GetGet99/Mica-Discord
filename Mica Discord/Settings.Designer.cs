@@ -70,5 +70,17 @@ namespace MicaDiscord {
                 this["ModeAwareCSS"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseBackdropAnyway {
+            get {
+                return ((bool)(this["UseBackdropAnyway"]));
+            }
+            set {
+                this["UseBackdropAnyway"] = value;
+            }
+        }
     }
 }
