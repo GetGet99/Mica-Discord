@@ -11,28 +11,5 @@ An application with Mica background using transparent-background WebView2 to hos
 # Disclaimer
 If you plan to use this with replace background enabled, I'm not sure if it violates Discord TOS or not. I'm not a lawyer. But here's how it works
 1. The app itself is basically like a web browser, hosting the web content in WebView2 that points to discord.com
-2. It injects this code.
-```javascript
-(function () {
-    let s = document.createElement('style');
-    s.innerHTML = `
-*{
-    --background-primary: #fff0;
-    --background-secondary: rgba(50,50,50,0.25);
-    --background-secondary-alt: rgba(50,50,50,0.25);
-    --background-tertiary: #fff0;
-    --background-floating: rgba(50,50,50,0.75);
-    --deprecated-store-bg: rgba(50,50,50,0.25);
-}
-.theme-dark .container-2cd8Mz {
-    background-color: rgba(50,50,50,0.25);
-}
-
-.callContainer-HtHELf {
-    background-color: rgba(50,50,50,0);
-}
-`.trim();
-    document.head.appendChild(s);
-})()
-```
+2. It injects a javascript code, which can be found somewhere here https://github.com/Get0457/Mica-Discord/blob/master/Mica%20Discord/MainWindow.xaml.cs.
 **If you use any part of this software, regardless of having any option on or off, it's your responsibility if you get banned or punished by Discord.** But the app is not harmful itself and the security should as safe as other apps using Microsoft Edge WebView2.
