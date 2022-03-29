@@ -31,6 +31,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1150.38" />
     <PackageReference Include="PInvoke.DwmApi" Version="0.7.104" />
+    <PackageReference Include="PInvoke.UxTheme" Version="0.7.104" />
   </ItemGroup>
 
   <ItemGroup>

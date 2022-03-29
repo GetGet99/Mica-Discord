@@ -8,13 +8,14 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 using System.Windows.Shell;
-
+using AccentColorTypes = MicaDiscord.CustomPInvoke.AccentColorTypes;
 namespace MicaDiscord;
 
 public partial class MainWindow : Window
 {
-    public static readonly bool NotSupportedBuild = Environment.OSVersion.Version.Build < 22523;
+    const bool IsAccentColorEnabled = false;
     const string Radius = "0.5rem";
+    public static readonly bool NotSupportedBuild = Environment.OSVersion.Version.Build < 22523;
     bool DiscordEffectApplied = false;
     bool _Dark = true;
     bool Dark
@@ -22,7 +23,7 @@ public partial class MainWindow : Window
         set
         {
             _Dark = value;
-            (Resources["Color"] as SolidColorBrush ?? throw new NullReferenceException()).Color = value ? Colors.White : Colors.Black;
+            if (!IsAccentColorEnabled) (Resources["Color"] as SolidColorBrush ?? throw new NullReferenceException()).Color = value ? Colors.White : Colors.Black;
         }
         get => _Dark;
     }
@@ -83,40 +84,79 @@ public partial class MainWindow : Window
         };
         WebView.NavigationCompleted += async delegate
         {
+            
+
             DiscordEffectApplied = Settings.Default.ReplaceDiscordBackground;
             if (DiscordEffectApplied)
             {
 
                 var Dark = (await WebView.CoreWebView2.ExecuteScriptAsync("document.getElementsByTagName('html')[0].classList.contains('theme-dark')")) == "true";
+
+                var PrimaryColor = CustomPInvoke.GetAccentColor(Dark ? AccentColorTypes.ImmersiveSaturatedHighlight : AccentColorTypes.ImmersiveSaturatedSelectionBackground);
+                var DisabledColor = CustomPInvoke.GetAccentColor(AccentColorTypes.ImmersiveSaturatedCommandRowDisabled);
+                var HoverColor = CustomPInvoke.GetAccentColor(AccentColorTypes.ImmersiveSaturatedCommandRowHover);
+                if (IsAccentColorEnabled) (Resources["Color"] as SolidColorBrush ?? throw new NullReferenceException()).Color = PrimaryColor;
+                
                 RefreshDarkMode(dark: Dark);
                 this.Dark = Dark;
                 var LightColorCSS = Dark && Settings.Default.ModeAwareCSS;
                 var invc = LightColorCSS ? 250 : 0;
                 var regc = LightColorCSS ? 0 : 255;
+                var regcgray = LightColorCSS ? 50 : 200;
                 var floating = Dark ? 0 : 255;
+                var ErrorAccentColor = CustomPInvoke.GetAccentColor(AccentColorTypes.ImmersiveSaturatedInlineErrorText);
                 await WebView.CoreWebView2.ExecuteScriptAsync($@"
 (function () {{
     let s = document.createElement('style');
     s.innerHTML = `
-*{{
-    --background-primary: rgba({invc},{invc},{invc},0.05);
+.theme-{(Dark ? "dark" : "light")} {{
+    --background-layering: rgba({invc},{invc},{invc},0.05);
+    --background-layering-half: rgba({invc},{invc},{invc},0.025);
+    --background-primary: var(--background-layering);
     --background-secondary: transparent;
     --background-secondary-alt: rgba({invc},{invc},{invc},0.075);
     --background-tertiary: transparent;
     --background-message-hover: rgba({invc},{invc},{invc},0.07);
     --background-floating: rgba({floating},{floating},{floating},0.75);
     --deprecated-store-bg: rgba({invc},{invc},{invc},0.05);
-    --channeltextarea-background: rgba({invc},{invc},{invc},0.05);
+    --channeltextarea-background: var(--background-layering);
     --scrollbar-auto-track: transparent;
     --scrollbar-thin-track: #0000;
     --scrollbar-thin-thumb: rgba({invc},{invc},{invc},0.25);
     --scrollbar-auto-thumb: rgba({invc},{invc},{invc},0.25);
+    --background-modifier-hover: var(--background-layering-half);
+    --background-modifier-selected: var(--background-layering);
+    --background-mentioned-hover: hsla(38,calc(var(--saturation-factor, 1)*95.7%),54.1%,{0.08 + (LightColorCSS ? 0.1 : 0)});
+    --win-accent-color: rgba({PrimaryColor.R}, {PrimaryColor.G}, {PrimaryColor.B}, {PrimaryColor.A});
+    --win-accent-disabled-color: rgba({DisabledColor.R}, {DisabledColor.G}, {DisabledColor.B}, {DisabledColor.A});
+    --win-accent-disabled-color-half: rgba({DisabledColor.R}, {DisabledColor.G}, {DisabledColor.B}, {DisabledColor.A / 2});
+    --win-error-accent-color: rgba({ErrorAccentColor.R}, {ErrorAccentColor.G}, {ErrorAccentColor.B}, {ErrorAccentColor.A});
+    --win-hover-accent-color: rgba({HoverColor.R}, {HoverColor.G}, {HoverColor.B}, {HoverColor.A});
+    --text-link: var(--win-accent-color);
+{(
+    IsAccentColorEnabled ? @"
+    --interactive-active: var(--win-accent-color);
+    --interactive-normal: var(--win-accent-color);
+    --interactive-hover: var(--win-hover-accent-color);
+    --interactive-disabled: var(--win-accent-disabled-color-half);
+    --text-muted: var(--win-accent-disabled-color-half);
+    --channels-default: var(--win-accent-disabled-color);
+" : ""
+)}
+    
+}}
+.content-3spvdd {{
+    --background-primary: rgb({regcgray},{regcgray},{regcgray});
 }}
 code, article {{
     --background-secondary: rgba({invc},{invc},{invc},0.05);
 }}
+.lookFilled-yCfaCM.colorPrimary-2AuQVo, .lookFilled-yCfaCM.colorGrey-2iAG-B {{
+    background-color: rgba({invc},{invc},{invc},0.05) !important;
+}}
 .content-2a4AW9 {{
-    --background-secondary: rgba({invc},{invc},{invc},0.025);
+    --background-secondary: var(--background-layering-half);
+    border-color: black;
 }}
 
 .form-3gdLxP {{
@@ -141,7 +181,8 @@ code, article {{
     border-radius: {Radius} 0px 0px 0px;
 }}
 .chatContent-3KubbW {{
-    background-color: rgba({invc},{invc},{invc},0.025) !important;
+    background-color: var(--background-layering-half) !important;
+    border-color: black;
 }}
 .container-2cd8Mz {{
     background-color: rgba({invc},{invc},{invc},0.05) !important;
@@ -154,8 +195,61 @@ code, article {{
 .panels-3wFtMD {{
     border-radius: {Radius} 0px 0px 0px;
 }}
-.message-2CShn3, .sidebar-1tnWFu {{
+.message-2CShn3 {{
     border-radius: {Radius};
+}}
+.sidebar-1tnWFu {{
+border-radius: {Radius} {Radius} 0px 0px;
+}}
+.popout-TdhJ6Z {{
+    --background-tertiary: rgba({floating},{floating},{floating},0.75);
+}}
+.popout-1KHNAq {{
+    --background-secondary: rgba({floating},{floating},{floating},0.75);
+}}
+.lookFilled-1GseHa.select-1Ia3hD {{
+    --background-secondary: rgba({invc},{invc},{invc},0.05);
+    --background-tertiary: rgba({invc},{invc},{invc},0.75);
+}}
+.unread-36eUEm, .item-2LIpTv {{
+    border-radius: 4px;
+}}
+.unread-36eUEm /* Unread Text Channels */
+{{
+    background-color: var(--win-accent-color);
+}}
+.item-2LIpTv {{
+    margin: 0px 0px 0px 2px;
+    width: 4px;
+    background: var(--win-accent-color);
+}}
+.gradientContainer-phMG8d /* In-Call Gradient effect on top and bottom */
+{{
+    height: 40px;
+    background-image: linear-gradient(rgba({invc},{invc},{invc},0.05),transparent);
+}}
+.modeSelected-3DmyhH::before /* Selected Text Channel */
+{{
+    content: """";
+    position: absolute;
+    height: 18px;
+    width: 4px;
+    border-radius: 4px;
+    top: 50%;
+    left: 0;
+    margin-top: -9px;
+    background: var(--win-accent-color);
+}}
+.modeUnread-3Cxepe .channelName-3KPsGw {{
+    font-weight: 600;
+}}
+.hljs-comment {{
+    color: seagreen !important;
+}}
+.layer-2aCOJ3 /* Thread Menu */
+{{
+    background-color: var(--background-floating);
+    border-radius: {Radius}
 }}
 `.trim();
     document.head.appendChild(s);
@@ -174,7 +268,8 @@ code, article {{
             string s = e.TryGetWebMessageAsString();
             switch (s)
             {
-
+                default:
+                    break;
             }
         };
         Closing += (_, e) =>
@@ -192,6 +287,7 @@ code, article {{
     
     private void OpenSettings(object sender, RoutedEventArgs e)
     {
+        SettingsDialog.ResetRequiresReload();
         DialogPlace.Visibility = Visibility.Visible;
         WebView.Visibility = Visibility.Hidden;
     }
@@ -203,6 +299,23 @@ code, article {{
             WebView.Reload();
         } catch { }
     }
+    public static SolidColorBrush GetColorFromHex(string hexaColor)
+    {
+        return new SolidColorBrush(
+            System.Windows.Media.Color.FromArgb(
+            Convert.ToByte(hexaColor[1..2], 16),
+            Convert.ToByte(hexaColor[3..2], 16),
+            Convert.ToByte(hexaColor[5..2], 16),
+            Convert.ToByte(hexaColor[7..2], 16)
+        ));
+    }
+    public static System.Windows.Media.Color GetColorFromUInt(uint value)
+        => System.Windows.Media.Color.FromArgb(
+            (byte)(value >> 24),
+            (byte)(value >> 16),
+            (byte)(value >> 8),
+            (byte)(value)
+        );
 }
 public partial class MainWindow : Window
 {

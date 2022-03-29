@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
 using WPFApplication = System.Windows.Application;
@@ -14,7 +15,7 @@ public partial class App : WPFApplication
     NotifyIcon NotifyIcon { get; } = new NotifyIcon
     {
         Text = "Mica Discord",
-        ContextMenuStrip = new ContextMenuStrip() { BackColor = Color.FromArgb(50,50,50), ShowImageMargin = false },
+        ContextMenuStrip = new ContextMenuStrip() { BackColor = Color.FromArgb(50, 50, 50), ShowImageMargin = false },
         Icon = ToIcon(ProgramResources.Logo)
     };
     static Icon ToIcon(Bitmap img)
@@ -28,13 +29,22 @@ public partial class App : WPFApplication
         {
             base.OnStartup(e);
             NotifyIcon.Click += (_, _) => OpenMenu();
-            var mainwindow = (MainWindow)MainWindow;
+            //var mainwindow = (MainWindow)MainWindow;
             NotifyIcon.ContextMenuStrip.Items.AddRange(new ToolStripItem[]
             {
             new ToolStripButton("Open", default, (_, _) => Dispatcher.Invoke(OpenMenu)) { ForeColor = Color.White },
             new ToolStripButton("Exit", default, (_, _) => Dispatcher.Invoke(() => {
-                mainwindow.ForceClose = true;
-                MainWindow.Close();
+                try
+                {
+                    if ((MainWindow is MainWindow window) && (window is not null))
+                    {
+                        window.ForceClose = true;
+                        window.Close();
+                    }
+                } finally
+                {
+                    Environment.Exit(0);
+                }
             })) { ForeColor = Color.White }
             });
             NotifyIcon.Visible = Settings.Default.UseSystemTray;
@@ -63,13 +73,15 @@ public partial class App : WPFApplication
     [STAThread]
     public static void Main()
     {
-        AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
+        using Mutex mutex = new(false, "Mica Discord");
+        if (!mutex.WaitOne(0, false))
         {
-            var ex = (Exception)eventArgs.ExceptionObject;
-            System.Windows.Forms.MessageBox.Show($"{ex.Message} {ex.Source} {ex.StackTrace}");
-        };
+            System.Windows.Forms.MessageBox.Show("Instance already running");
+            return;
+        }
         var app = new App();
         app.InitializeComponent();
         app.Run();
+
     }
 }
