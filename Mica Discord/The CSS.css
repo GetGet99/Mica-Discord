@@ -1,0 +1,253 @@
+/* System Colors
+--sys-accent-prop
+--sys-accent-color
+--sys-accent-light-3-color
+--sys-accent-disabled-color
+--sys-accent-disabled-color-half
+--sys-error-accent-color
+--sys-hover-accent-color
+--sys-light-color-bg
+--sys-layering-strength
+--sys-floating-strength
+--sys-normal-strength
+--sys-border-radius
+*/
+* { /* Predefined Theme Color */
+    --theme-layering-prop: var(--sys-layering-strength), var(--sys-layering-strength), var(--sys-layering-strength);
+    --theme-layering-solid-color: rgb(var(--theme-layering-prop));
+    --theme-bg-layering-double: rgba(var(--theme-layering-prop),0.1);
+    --theme-bg-layering: rgba(var(--theme-layering-prop),0.05);
+    --theme-bg-layering-half: rgba(var(--theme-layering-prop),0.025);
+    --theme-floating-prop: var(--sys-floating-strength), var(--sys-floating-strength), var(--sys-floating-strength);
+    --theme-bg-floating: rgba(var(--theme-floating-prop),0.75);
+    --theme-scrollbar-color: rgba(var(--theme-layering-prop),0.25);
+    --theme-normal-prop: var(--sys-normal-strength),var(--sys-normal-strength),var(--sys-normal-strength);
+    --theme-border-color: rgba(var(--theme-layering-prop),0.5);
+}
+* {
+    --background-primary: var(--theme-bg-layering);
+    --background-secondary: transparent;
+    --background-secondary-alt: rgba(var(--theme-layering-prop),0.075);
+    --background-tertiary: transparent;
+    --background-message-hover: rgba(var(--theme-layering-prop),0.07);
+    --background-floating: var(--theme-bg-floating);
+
+    --activity-card-background: var(--theme-bg-layering);
+    --deprecated-store-bg: var(--background-primary);
+    --channeltextarea-background: var(--theme-bg-layering);
+    --input-background: var(--theme-bg-layering);
+    --scrollbar-auto-track: transparent;
+    --scrollbar-thin-track: transparent;
+    --scrollbar-thin-thumb: var(--theme-scrollbar-color);
+    --scrollbar-auto-thumb: var(--theme-scrollbar-color);
+    --background-modifier-hover: var(--theme-bg-layering-half);
+    --background-modifier-selected: var(--theme-bg-layering);
+    --background-mentioned-hover: hsla(38,calc(var(--saturation-factor, 1)*95.7%),54.1%,calc(0.08 + var(--sys-light-color-bg) * 0.1));
+    --text-link: var(--sys-accent-light-3-color);
+}
+* {
+    --brand-experiment-100: var(--sys-accent-color);
+    --brand-experiment-130: var(--sys-accent-color);
+    --brand-experiment-160: var(--sys-accent-color);
+    --brand-experiment-200: var(--sys-accent-color);
+    --brand-experiment-230: var(--sys-accent-color);
+    --brand-experiment-260: var(--sys-accent-color);
+    --brand-experiment-300: var(--sys-accent-color);
+    --brand-experiment-330: var(--sys-accent-color);
+    --brand-experiment-360: var(--sys-accent-color);
+    --brand-experiment-400: var(--sys-accent-color);
+    --brand-experiment-430: var(--sys-accent-color);
+    --brand-experiment-460: var(--sys-accent-color);
+    --brand-experiment: var(--sys-accent-color);
+    --brand-experiment-500: var(--sys-accent-color);
+    --brand-experiment-530: var(--sys-accent-color);
+    --brand-experiment-560: var(--sys-accent-color);
+    --brand-experiment-600: var(--sys-accent-color);
+    --brand-experiment-630: var(--sys-accent-color);
+    --brand-experiment-660: var(--sys-accent-color);
+    --brand-experiment-700: var(--sys-accent-color);
+    --brand-experiment-730: var(--sys-accent-color);
+    --brand-experiment-760: var(--sys-accent-color);
+    --brand-experiment-800: var(--sys-accent-color);
+    --brand-experiment-830: var(--sys-accent-color);
+    --brand-experiment-860: var(--sys-accent-color);
+    --brand-experiment-900: var(--sys-accent-color);
+    --brand-experiment-05a: rgba(var(--sys-accent-prop),0.05);
+    --brand-experiment-10a: rgba(var(--sys-accent-prop),0.1);
+    --brand-experiment-15a: rgba(var(--sys-accent-prop),0.15);
+    --brand-experiment-20a: rgba(var(--sys-accent-prop),0.2);
+    --brand-experiment-25a: rgba(var(--sys-accent-prop),0.25);
+    --brand-experiment-30a: rgba(var(--sys-accent-prop),0.3);
+    --brand-experiment-35a: rgba(var(--sys-accent-prop),0.35);
+    --brand-experiment-40a: rgba(var(--sys-accent-prop),0.4);
+    --brand-experiment-45a: rgba(var(--sys-accent-prop),0.45);
+    --brand-experiment-50a: rgba(var(--sys-accent-prop),0.5);
+    --brand-experiment-55a: rgba(var(--sys-accent-prop),0.55);
+    --brand-experiment-60a: rgba(var(--sys-accent-prop),0.6);
+    --brand-experiment-65a: rgba(var(--sys-accent-prop),0.65);
+    --brand-experiment-70a: rgba(var(--sys-accent-prop),0.7);
+    --brand-experiment-75a: rgba(var(--sys-accent-prop),0.75);
+    --brand-experiment-80a: rgba(var(--sys-accent-prop),0.8);
+    --brand-experiment-85a: rgba(var(--sys-accent-prop),0.85);
+    --brand-experiment-90a: rgba(var(--sys-accent-prop),0.9);
+    --brand-experiment-95a: rgba(var(--sys-accent-prop),0.95);
+}
+.appMount-2yBXZl /* Main application */
+{
+    border-radius: var(--sys-border-radius);
+}
+.content-3spvdd /* Bubble saying the date */
+{
+    --background-primary: rgb(var(--theme-normal-prop));
+}
+code, /* Code blocks */
+article, /* Embeded */
+*[class*="lookFilled"], /* Any spcial controls in chat or somewhere else (combobox, etc.) */
+.container-2cd8Mz,
+.inset-SbsSFp /* The card in Home -> Friend page -> Inner Card */
+{
+    background-color: var(--theme-bg-layering) !important;
+}
+.chatContent-3KubbW, /* The chat messages content */
+div[aria-label="Members"] /* Members pane on the right of the chat */
+{
+    background-color: var(--theme-bg-layering-half);
+}
+*[class*="lookFilled"]:hover /* Any spcial controls in chat or somewhere else (combobox, etc.) but hover */
+{
+    border-color: var(--theme-border-color) !important;
+}
+/* [Typing message box: What Discord does with it]
+
+Have a textbox without top margin
+
+Instead, if we scroll down to the bottom, then there is the padding in the chat messages instead.
+
+No, I don't want that since it will be hard to style later.
+*/
+.form-3gdLxP /* Typing message box */
+{
+    margin-top: 0px !important;
+    padding-top: 16px !important;
+}
+.form-3gdLxP:before /* Typing message box */
+{
+    width: 0px !important;
+    height: 0px !important;
+}
+.scroller-kQBbkU::-webkit-scrollbar-track /* Main scroll bar */
+{
+    margin-bottom: 0px !important;
+}
+.scrollerSpacer-3AqkT9 /* The space reserved when scrolling the chat messages to the bottom. It's no longer needed since we add padding to the textbox instead. */
+{
+    display: none;
+}
+/* End of [Typing message box: What Discord does with it] */
+.content-2a4AW9, .members-3WRCEx, .membersWrap-3NUR2t {
+    min-height: 100%;
+    padding: 0px !important;
+}
+.content-FDHp32 a /* <a> inside the popup box when you click the text channel description */
+{
+    color: var(--text-link) !important;
+}
+.chat-2ZfjoI, .container-2cd8Mz, .container-36u7Lw, .applicationStore-2nk7Lo {
+    border-radius: var(--sys-border-radius) 0px 0px 0px;
+}
+
+.callContainer-HtHELf {
+    background-color: transparent;
+}
+
+.panels-3wFtMD {
+    border-radius: var(--sys-border-radius) 0px 0px 0px;
+}
+.message-2CShn3 {
+    border-radius: var(--sys-border-radius);
+}
+.sidebar-1tnWFu {
+border-radius: var(--sys-border-radius) var(--sys-border-radius) 0px 0px;
+}
+
+.item-2LIpTv /* Server Unread tag in front */
+{
+    margin: 0px 0px 0px 2px;
+    width: 4px;
+    background: var(--sys-accent-light-3-color);
+    border-radius: 4px;
+}
+.gradientContainer-phMG8d /* In-Call Gradient effect on top and bottom */
+{
+    height: 40px;
+    background-image: linear-gradient(var(--theme-bg-layering),transparent);
+}
+.unread-36eUEm /* Text Channel Unread tag in front */
+{
+    display: none;
+    background-color: var(--sys-accent-light-3-color);
+}
+.wrapper-NhbLHG::before /* Text Channel (before) */
+{
+    content: "";
+    position: absolute;
+    height: 0px;
+    width: 4px;
+    border-radius: 4px;
+    top: 50%;
+    left: 0;
+    margin-top: 0px;
+    background: var(--sys-accent-light-3-color);
+    transition: height 0.1s linear, margin-top 0.1s linear;
+}
+.wrapper-NhbLHG:hover::before /* Text Channel (Hover, before) */
+{
+    height: 14px;
+    margin-top: -7px;
+}
+.modeUnread-3Cxepe::before /* Text Channel Unread (before) */
+{
+    height: 8px;
+    margin-top: -4px;
+}
+.modeSelected-3DmyhH::before /* Text Channel Selected */
+{
+    height: 18px !important;
+    margin-top: -9px !important;
+}
+.modeUnread-3Cxepe .channelName-3KPsGw /* Channel name that is unread */
+{
+    font-weight: 600;
+}
+.hljs-comment {
+    color: seagreen !important;
+}
+*[class*="popout"] /* Popout (Class) */
+{
+    border-width: 1px;
+    border-color: var(--theme-border-color);
+    background-color: rgba(var(--theme-normal-prop),0.75);
+}
+[id*="popout"] /* Thread Menu and Pinned Message */
+{
+    background-color: var(--theme-bg-floating);
+    border-radius: var(--sys-border-radius);
+}
+.outer-2JOHae.active-1W_Gl9,
+.outer-2JOHae.interactive-2zD88a:hover /* The card in Home -> Friend page background */
+{
+    background-color: var(--theme-bg-layering-double) !important;
+}
+.container-2nx-BQ /* Settings Toggle */
+{
+    background-color: hsl(218, calc(var(--saturation-factor, 1) * 4.6%), 46.9%) !important;
+    transition: background-color linear;
+}
+.container-2nx-BQ[class*="checked"] /* Settings Toggle */
+{
+    background-color: var(--sys-accent-color) !important;
+}
+.divider-2rZFJK /* Unread Message Divider (NEW! tag) */
+{
+    --divider-color: var(--sys-accent-color); /* Intentional setting variable instead of color */
+}
