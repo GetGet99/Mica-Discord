@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Windows.Media;
 
-namespace MicaDiscord;
+namespace CustomPInvoke;
 
 public enum BackdropType
 {
@@ -11,7 +11,7 @@ public enum BackdropType
     Acrylic = 3, // Acrylic
     Tabbed = 4 // Tabbed
 }
-class CustomPInvoke
+class DwmApi
 {
     [Flags]
     enum DWM_SYSTEMBACKDROP_TYPE
@@ -35,14 +35,9 @@ class CustomPInvoke
 
     public static int SetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE attribute, int parameter)
         => DwmSetWindowAttribute(hwnd, attribute, ref parameter, Marshal.SizeOf<int>());
-
-    [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    public extern static bool DestroyIcon(IntPtr handle);
-
-    [DllImport("gdi32.dll", EntryPoint = "DeleteObject")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool DeleteObject([In] IntPtr hObject);
-
+}
+class UxTheme
+{
     [DllImport("uxtheme.dll", EntryPoint = "#94")]
     public static extern int GetImmersiveColorSetCount();
 

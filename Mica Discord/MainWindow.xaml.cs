@@ -1,19 +1,22 @@
-﻿using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Interop;
+﻿using Microsoft.Web.WebView2.Core;
 using PInvoke;
+using System;
 using System.Drawing;
-using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shell;
-using AccentColorTypes = MicaDiscord.CustomPInvoke.AccentColorTypes;
+using Windows.UI.ViewManagement;
+using AccentColorTypes = CustomPInvoke.UxTheme.AccentColorTypes;
+//using WindowMessage = PInvoke.User32.WindowMessage;
+
 namespace MicaDiscord;
 
 public partial class MainWindow : Window
 {
-    const bool IsAccentColorEnabled = false;
+    static UISettings UISettings { get; } = new();
+    static bool IsExcessiveAccentColorEnabled => Settings.Default.ExcessiveAccentColor;
     const string Radius = "0.5rem";
     public static readonly bool NotSupportedBuild = Environment.OSVersion.Version.Build < 22523;
     bool DiscordEffectApplied = false;
@@ -23,16 +26,17 @@ public partial class MainWindow : Window
         set
         {
             _Dark = value;
-            if (!IsAccentColorEnabled) (Resources["Color"] as SolidColorBrush ?? throw new NullReferenceException()).Color = value ? Colors.White : Colors.Black;
+            if (!IsExcessiveAccentColorEnabled) (Resources["Color"] as SolidColorBrush ?? throw new NullReferenceException()).Color = value ? Colors.White : Colors.Black;
         }
         get => _Dark;
     }
-
+    
     void OnLoaded(object sender, RoutedEventArgs e)
     {
         void RefreshFrame()
         {
             HwndSource mainWindowSrc = HwndSource.FromHwnd(Handle);
+            
             if (NotSupportedBuild && !Settings.Default.UseBackdropAnyway)
             {
                 mainWindowSrc.CompositionTarget.BackgroundColor = Dark ? System.Windows.Media.Color.FromRgb(50, 50, 50) :
@@ -49,22 +53,64 @@ public partial class MainWindow : Window
                 });
             }
         }
-        
-        void RefreshDarkMode(bool dark) => CustomPInvoke.SetWindowAttribute(
+        void RefreshDarkMode(bool dark) => CustomPInvoke.DwmApi.SetWindowAttribute(
             Handle,
-            CustomPInvoke.DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE,
+            CustomPInvoke.DwmApi.DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE,
             dark ? 1 : 0 // Always dark as of now, or you can change to: ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Dark ? 1 : 0
         );
-        RefreshDarkMode(dark: true);
+        static bool IsDarkBackground(Windows.UI.Color color)
+        {
+            return color.R + color.G + color.B < (255 * 3 - color.R - color.G - color.B);
+        }
+        RefreshDarkMode(dark: IsDarkBackground(UISettings.GetColorValue(UIColorType.Background)));
         SizeChanged += (_, _) => RefreshFrame();
         IsVisibleChanged += (_, _) => RefreshFrame();
-        //ThemeManager.Current.ActualApplicationThemeChanged += (_, _) => RefreshDarkMode();
-        Width += 1;
         
-        SetBackdrop((BackdropType)Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType, ignoreCase: true));
+        Width += 1;
+        bool UserRequestOpenNewWindow = false;
+        SetBackdrop((CustomPInvoke.BackdropType)Enum.Parse(typeof(CustomPInvoke.BackdropType), Settings.Default.BackdropType, ignoreCase: true));
         WebView.CoreWebView2InitializationCompleted += (_, _) =>
         {
-            WebView.CoreWebView2.DocumentTitleChanged += (_, _) =>
+            var CoreWebView2 = WebView.CoreWebView2;
+            CoreWebView2.NewWindowRequested += (_, e) =>
+            {
+                if (UserRequestOpenNewWindow)
+                {
+                    UserRequestOpenNewWindow = false;
+                    return;
+                }
+                System.Diagnostics.Process.Start("explorer", e.Uri);
+                e.Handled = true;
+            };
+            
+            CoreWebView2.ContextMenuRequested += (_, e) =>
+            {
+                if (e.ContextMenuTarget.HasLinkUri)
+                {
+                    var newItem = CoreWebView2.Environment.CreateContextMenuItem("Open In Default Browser", null, CoreWebView2ContextMenuItemKind.Command);
+                    newItem.CustomItemSelected += (_, e2) =>
+                    {
+                        System.Diagnostics.Process.Start("explorer", e.ContextMenuTarget.LinkUri);
+                    };
+                    e.MenuItems.Insert(0, CoreWebView2.Environment.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+                    e.MenuItems.Insert(0, newItem);
+
+                    foreach (var menu in e.MenuItems)
+                    {
+                        if (menu.Label.ToLower().Replace("&","").Contains("new window")) menu.CustomItemSelected += (_, e) =>
+                        {
+                            UserRequestOpenNewWindow = true;
+                        };
+                    }
+                }
+            };
+            var handle = WebView.Handle;
+            _ = User32.SetWindowLong(handle, User32.WindowLongIndexFlags.GWL_EXSTYLE,
+                (User32.SetWindowLongFlags)User32.GetWindowLong(handle, User32.WindowLongIndexFlags.GWL_EXSTYLE)
+                | User32.SetWindowLongFlags.WS_CLIPCHILDREN
+            );
+
+            CoreWebView2.DocumentTitleChanged += (_, _) =>
             {
                 var title = WebView.CoreWebView2.DocumentTitle;
                 if (title == "Discord")
@@ -74,88 +120,188 @@ public partial class MainWindow : Window
                 } else Title = $"Mica Discord - {title}";
                 WebsiteTitle.Text = title;
             };
-            WebView.CoreWebView2.HistoryChanged += delegate
+            CoreWebView2.HistoryChanged += delegate
             {
                 Back.IsEnabled = WebView.CanGoBack;
                 Forward.IsEnabled = WebView.CanGoForward;
                 RefreshFrame();
             };
+
+
             RefreshFrame();
         };
         WebView.NavigationCompleted += async delegate
         {
-            
 
+            if (!WebView.Source.OriginalString.Contains("discord.com")) return;
             DiscordEffectApplied = Settings.Default.ReplaceDiscordBackground;
             if (DiscordEffectApplied)
             {
-
                 var Dark = (await WebView.CoreWebView2.ExecuteScriptAsync("document.getElementsByTagName('html')[0].classList.contains('theme-dark')")) == "true";
+                var Light = (await WebView.CoreWebView2.ExecuteScriptAsync("document.getElementsByTagName('html')[0].classList.contains('theme-light')")) == "true";
+                if (Dark is false && Light is false)
+                    Dark = this.Dark; // Don't change
+                var PrimaryColor = UISettings.GetColorValue(UIColorType.AccentLight3);//CustomPInvoke.GetAccentColor(Dark ? AccentColorTypes.ImmersiveSaturatedHighlight : AccentColorTypes.ImmersiveSaturatedSelectionBackground);
+                var DisabledColor = UISettings.GetColorValue(UIColorType.AccentLight2);//CustomPInvoke.GetAccentColor(AccentColorTypes.ImmersiveSaturatedCommandRowDisabled);
+                DisabledColor.A /= 2;
+                var HoverColor = UISettings.GetColorValue(UIColorType.AccentLight2);
+                var Accent = UISettings.GetColorValue(UIColorType.Accent);
+                if (IsExcessiveAccentColorEnabled) (Resources["Color"] as SolidColorBrush ?? throw new NullReferenceException()).Color = System.Windows.Media.Color.FromArgb(PrimaryColor.A, PrimaryColor.R, PrimaryColor.G, PrimaryColor.B);
 
-                var PrimaryColor = CustomPInvoke.GetAccentColor(Dark ? AccentColorTypes.ImmersiveSaturatedHighlight : AccentColorTypes.ImmersiveSaturatedSelectionBackground);
-                var DisabledColor = CustomPInvoke.GetAccentColor(AccentColorTypes.ImmersiveSaturatedCommandRowDisabled);
-                var HoverColor = CustomPInvoke.GetAccentColor(AccentColorTypes.ImmersiveSaturatedCommandRowHover);
-                if (IsAccentColorEnabled) (Resources["Color"] as SolidColorBrush ?? throw new NullReferenceException()).Color = PrimaryColor;
-                
+                /*
+                static double GetHue(int red, int green, int blue)
+                {
+
+                    float min = Math.Min(Math.Min(red, green), blue);
+                    float max = Math.Max(Math.Max(red, green), blue);
+
+                    if (min == max)
+                    {
+                        return 0;
+                    }
+
+                    float hue;
+                    if (max == red) hue = (green - blue) / (max - min);
+                    else if (max == green) hue = 2f + (blue - red) / (max - min);
+                    else hue = 4f + (red - green) / (max - min);
+
+                    hue *= 60;
+                    if (hue < 0) hue += 360;
+
+                    return hue;
+                }
+                */
                 RefreshDarkMode(dark: Dark);
                 this.Dark = Dark;
                 var LightColorCSS = Dark && Settings.Default.ModeAwareCSS;
                 var invc = LightColorCSS ? 250 : 0;
-                var regc = LightColorCSS ? 0 : 255;
                 var regcgray = LightColorCSS ? 50 : 200;
                 var floating = Dark ? 0 : 255;
-                var ErrorAccentColor = CustomPInvoke.GetAccentColor(AccentColorTypes.ImmersiveSaturatedInlineErrorText);
+                var ErrorAccentColor = CustomPInvoke.UxTheme.GetAccentColor(AccentColorTypes.ImmersiveSaturatedInlineErrorText);
                 await WebView.CoreWebView2.ExecuteScriptAsync($@"
 (function () {{
     let s = document.createElement('style');
     s.innerHTML = `
-.theme-{(Dark ? "dark" : "light")} {{
-    --background-layering: rgba({invc},{invc},{invc},0.05);
-    --background-layering-half: rgba({invc},{invc},{invc},0.025);
-    --background-primary: var(--background-layering);
+* {{ /* System Color */
+    --sys-accent-prop: {Accent.R}, {Accent.G}, {Accent.B};
+    --sys-accent-color: rgba({Accent.R}, {Accent.G}, {Accent.B}, {Accent.A});
+    --sys-accent-light-3-color: rgba({PrimaryColor.R}, {PrimaryColor.G}, {PrimaryColor.B}, {PrimaryColor.A});
+    --sys-accent-disabled-color: rgba({DisabledColor.R}, {DisabledColor.G}, {DisabledColor.B}, {DisabledColor.A});
+    --sys-accent-disabled-color-half: rgba({DisabledColor.R}, {DisabledColor.G}, {DisabledColor.B}, {DisabledColor.A / 2});
+    --sys-error-accent-color: rgba({ErrorAccentColor.R}, {ErrorAccentColor.G}, {ErrorAccentColor.B}, {ErrorAccentColor.A});
+    --sys-hover-accent-color: rgba({HoverColor.R}, {HoverColor.G}, {HoverColor.B}, {HoverColor.A});
+    --sys-light-color-bg: {(LightColorCSS ? 1 : 0)};
+    --sys-layering-strength: {invc};
+    --sys-floating-strength: {floating};
+    --sys-non-tran-bg-gray-strength: {regcgray};
+    --sys-border-radius: {Radius};
+}}
+* {{ /* Predefined Theme Color */
+    --theme-layering-prop: var(--sys-layering-strength), var(--sys-layering-strength), var(--sys-layering-strength);
+    --theme-layering-solid-color: rgb(--theme-layering-prop);
+    --theme-bg-layering-double: rgba(var(--theme-layering-prop),0.1);
+    --theme-bg-layering: rgba(var(--theme-layering-prop),0.05);
+    --theme-bg-layering-half: rgba(var(--theme-layering-prop),0.025);
+    --theme-floating-prop: var(--sys-floating-strength), var(--sys-floating-strength), var(--sys-floating-strength);
+    --theme-bg-floating: rgba(var(--theme-floating-prop),0.75);
+    --theme-scrollbar-color: rgba(var(--theme-layering-prop),0.25);
+}}
+* {{
+    --background-primary: var(--theme-bg-layering);
     --background-secondary: transparent;
-    --background-secondary-alt: rgba({invc},{invc},{invc},0.075);
+    --background-secondary-alt: rgba(var(--theme-layering-prop),0.075);
     --background-tertiary: transparent;
-    --background-message-hover: rgba({invc},{invc},{invc},0.07);
-    --background-floating: rgba({floating},{floating},{floating},0.75);
-    --deprecated-store-bg: rgba({invc},{invc},{invc},0.05);
-    --channeltextarea-background: var(--background-layering);
+    --background-message-hover: rgba(var(--theme-layering-prop),0.07);
+    --background-floating: var(--theme-bg-floating);
+
+    --activity-card-background: var(--theme-bg-layering);
+    --deprecated-store-bg: var(--background-primary);
+    --channeltextarea-background: var(--theme-bg-layering);
+    --input-background: var(--theme-bg-layering);
     --scrollbar-auto-track: transparent;
     --scrollbar-thin-track: #0000;
-    --scrollbar-thin-thumb: rgba({invc},{invc},{invc},0.25);
-    --scrollbar-auto-thumb: rgba({invc},{invc},{invc},0.25);
-    --background-modifier-hover: var(--background-layering-half);
-    --background-modifier-selected: var(--background-layering);
-    --background-mentioned-hover: hsla(38,calc(var(--saturation-factor, 1)*95.7%),54.1%,{0.08 + (LightColorCSS ? 0.1 : 0)});
-    --win-accent-color: rgba({PrimaryColor.R}, {PrimaryColor.G}, {PrimaryColor.B}, {PrimaryColor.A});
-    --win-accent-disabled-color: rgba({DisabledColor.R}, {DisabledColor.G}, {DisabledColor.B}, {DisabledColor.A});
-    --win-accent-disabled-color-half: rgba({DisabledColor.R}, {DisabledColor.G}, {DisabledColor.B}, {DisabledColor.A / 2});
-    --win-error-accent-color: rgba({ErrorAccentColor.R}, {ErrorAccentColor.G}, {ErrorAccentColor.B}, {ErrorAccentColor.A});
-    --win-hover-accent-color: rgba({HoverColor.R}, {HoverColor.G}, {HoverColor.B}, {HoverColor.A});
-    --text-link: var(--win-accent-color);
+    --scrollbar-thin-thumb: --theme-scrollbar-color;
+    --scrollbar-auto-thumb: --theme-scrollbar-color;
+    --background-modifier-hover: var(--theme-bg-layering-half);
+    --background-modifier-selected: var(--theme-bg-layering);
+    --background-mentioned-hover: hsla(38,calc(var(--saturation-factor, 1)*95.7%),54.1%,calc(0.08 + var(--sys-light-color-bg) * 0.1));
+    --text-link: var(--sys-accent-light-3-color);
+}}
+* {{
 {(
-    IsAccentColorEnabled ? @"
-    --interactive-active: var(--win-accent-color);
-    --interactive-normal: var(--win-accent-color);
-    --interactive-hover: var(--win-hover-accent-color);
-    --interactive-disabled: var(--win-accent-disabled-color-half);
-    --text-muted: var(--win-accent-disabled-color-half);
-    --channels-default: var(--win-accent-disabled-color);
+    IsExcessiveAccentColorEnabled ? @"
+    --interactive-active: var(--sys-accent-light-3-color);
+    --interactive-normal: var(--sys-accent-light-3-color);
+    --interactive-hover: var(--sys-hover-accent-color);
+    --interactive-disabled: var(--sys-accent-disabled-color-half);
+    --text-muted: var(--sys-accent-disabled-color-half);
+    --channels-default: var(--sys-accent-disabled-color);
 " : ""
 )}
     
 }}
+* {{
+    --brand-experiment-100: var(--sys-accent-color);
+    --brand-experiment-130: var(--sys-accent-color);
+    --brand-experiment-160: var(--sys-accent-color);
+    --brand-experiment-200: var(--sys-accent-color);
+    --brand-experiment-230: var(--sys-accent-color);
+    --brand-experiment-260: var(--sys-accent-color);
+    --brand-experiment-300: var(--sys-accent-color);
+    --brand-experiment-330: var(--sys-accent-color);
+    --brand-experiment-360: var(--sys-accent-color);
+    --brand-experiment-400: var(--sys-accent-color);
+    --brand-experiment-430: var(--sys-accent-color);
+    --brand-experiment-460: var(--sys-accent-color);
+    --brand-experiment: var(--sys-accent-color);
+    --brand-experiment-500: var(--sys-accent-color);
+    --brand-experiment-530: var(--sys-accent-color);
+    --brand-experiment-560: var(--sys-accent-color);
+    --brand-experiment-600: var(--sys-accent-color);
+    --brand-experiment-630: var(--sys-accent-color);
+    --brand-experiment-660: var(--sys-accent-color);
+    --brand-experiment-700: var(--sys-accent-color);
+    --brand-experiment-730: var(--sys-accent-color);
+    --brand-experiment-760: var(--sys-accent-color);
+    --brand-experiment-800: var(--sys-accent-color);
+    --brand-experiment-830: var(--sys-accent-color);
+    --brand-experiment-860: var(--sys-accent-color);
+    --brand-experiment-900: var(--sys-accent-color);
+    --brand-experiment-05a: rgba(var(--sys-accent-prop),0.05);
+    --brand-experiment-10a: rgba(var(--sys-accent-prop),0.1);
+    --brand-experiment-15a: rgba(var(--sys-accent-prop),0.15);
+    --brand-experiment-20a: rgba(var(--sys-accent-prop),0.2);
+    --brand-experiment-25a: rgba(var(--sys-accent-prop),0.25);
+    --brand-experiment-30a: rgba(var(--sys-accent-prop),0.3);
+    --brand-experiment-35a: rgba(var(--sys-accent-prop),0.35);
+    --brand-experiment-40a: rgba(var(--sys-accent-prop),0.4);
+    --brand-experiment-45a: rgba(var(--sys-accent-prop),0.45);
+    --brand-experiment-50a: rgba(var(--sys-accent-prop),0.5);
+    --brand-experiment-55a: rgba(var(--sys-accent-prop),0.55);
+    --brand-experiment-60a: rgba(var(--sys-accent-prop),0.6);
+    --brand-experiment-65a: rgba(var(--sys-accent-prop),0.65);
+    --brand-experiment-70a: rgba(var(--sys-accent-prop),0.7);
+    --brand-experiment-75a: rgba(var(--sys-accent-prop),0.75);
+    --brand-experiment-80a: rgba(var(--sys-accent-prop),0.8);
+    --brand-experiment-85a: rgba(var(--sys-accent-prop),0.85);
+    --brand-experiment-90a: rgba(var(--sys-accent-prop),0.9);
+    --brand-experiment-95a: rgba(var(--sys-accent-prop),0.95);
+}}
+.appMount-2yBXZl /* Main application */
+{{
+    border-radius: var(--sys-border-radius);
+}}
 .content-3spvdd {{
-    --background-primary: rgb({regcgray},{regcgray},{regcgray});
+    --background-primary: rgb(var(--sys-non-tran-bg-gray-strength), var(--sys-non-tran-bg-gray-strength), var(--sys-non-tran-bg-gray-strength));
 }}
 code, article {{
-    --background-secondary: rgba({invc},{invc},{invc},0.05);
+    --background-secondary: var(--theme-bg-layering);
 }}
 .lookFilled-yCfaCM.colorPrimary-2AuQVo, .lookFilled-yCfaCM.colorGrey-2iAG-B {{
-    background-color: rgba({invc},{invc},{invc},0.05) !important;
+    background-color: --theme-bg-layering !important;
 }}
 .content-2a4AW9 {{
-    --background-secondary: var(--background-layering-half);
+    --background-secondary: var(--theme-bg-layering-half);
     border-color: black;
 }}
 
@@ -177,68 +323,89 @@ code, article {{
     min-height: 100%;
     padding: 0px !important;
 }}
+.content-FDHp32 a {{
+    color: var(--text-link) !important;
+}}
 .chat-2ZfjoI, .container-2cd8Mz, .container-36u7Lw, .applicationStore-2nk7Lo {{
-    border-radius: {Radius} 0px 0px 0px;
+    border-radius: var(--sys-border-radius) 0px 0px 0px;
 }}
 .chatContent-3KubbW {{
-    background-color: var(--background-layering-half) !important;
+    background-color: var(--theme-bg-layering-half) !important;
     border-color: black;
 }}
 .container-2cd8Mz {{
-    background-color: rgba({invc},{invc},{invc},0.05) !important;
+    background-color: --theme-bg-layering !important;
 }}
 
 .callContainer-HtHELf {{
-    background-color: rgba({regc},{regc},{regc},0);
+    background-color: transparent;
 }}
 
 .panels-3wFtMD {{
-    border-radius: {Radius} 0px 0px 0px;
+    border-radius: var(--sys-border-radius) 0px 0px 0px;
 }}
 .message-2CShn3 {{
-    border-radius: {Radius};
+    border-radius: var(--sys-border-radius);
 }}
 .sidebar-1tnWFu {{
-border-radius: {Radius} {Radius} 0px 0px;
+border-radius: var(--sys-border-radius) var(--sys-border-radius) 0px 0px;
 }}
 .popout-TdhJ6Z {{
-    --background-tertiary: rgba({floating},{floating},{floating},0.75);
+    --background-tertiary: var(--theme-bg-floating);
 }}
 .popout-1KHNAq {{
-    --background-secondary: rgba({floating},{floating},{floating},0.75);
+    --background-secondary: var(--theme-bg-floating);
 }}
 .lookFilled-1GseHa.select-1Ia3hD {{
-    --background-secondary: rgba({invc},{invc},{invc},0.05);
-    --background-tertiary: rgba({invc},{invc},{invc},0.75);
+    --background-secondary: var(--theme-bg-layering);
+    --background-tertiary: rgba(var(--theme-layering-prop),0.75);
 }}
 .unread-36eUEm, .item-2LIpTv {{
     border-radius: 4px;
 }}
-.unread-36eUEm /* Unread Text Channels */
-{{
-    background-color: var(--win-accent-color);
-}}
+
 .item-2LIpTv {{
     margin: 0px 0px 0px 2px;
     width: 4px;
-    background: var(--win-accent-color);
+    background: var(--sys-accent-light-3-color);
 }}
 .gradientContainer-phMG8d /* In-Call Gradient effect on top and bottom */
 {{
     height: 40px;
-    background-image: linear-gradient(rgba({invc},{invc},{invc},0.05),transparent);
+    background-image: linear-gradient(--theme-bg-layering,transparent);
 }}
-.modeSelected-3DmyhH::before /* Selected Text Channel */
+.unread-36eUEm /* Text Channel Unread */
+{{
+    display: none;
+    background-color: var(--sys-accent-light-3-color);
+}}
+.wrapper-NhbLHG::before /* Text Channel (before) */
 {{
     content: """";
     position: absolute;
-    height: 18px;
+    height: 0px;
     width: 4px;
     border-radius: 4px;
     top: 50%;
     left: 0;
-    margin-top: -9px;
-    background: var(--win-accent-color);
+    margin-top: 0px;
+    background: var(--sys-accent-light-3-color);
+    transition: height 0.1s linear, margin-top 0.1s linear;
+}}
+.wrapper-NhbLHG:hover::before /* Text Channel (Hover, before) */
+{{
+    height: 14px;
+    margin-top: -7px;
+}}
+.modeUnread-3Cxepe::before /* Text Channel Unread (before) */
+{{
+    height: 8px;
+    margin-top: -4px;
+}}
+.modeSelected-3DmyhH::before /* Text Channel Selected */
+{{
+    height: 18px !important;
+    margin-top: -9px !important;
 }}
 .modeUnread-3Cxepe .channelName-3KPsGw {{
     font-weight: 600;
@@ -246,10 +413,18 @@ border-radius: {Radius} {Radius} 0px 0px;
 .hljs-comment {{
     color: seagreen !important;
 }}
-.layer-2aCOJ3 /* Thread Menu */
+[id*=""popout""] /* Thread Menu and Pinned Message */
 {{
     background-color: var(--background-floating);
-    border-radius: {Radius}
+    border-radius: var(--sys-border-radius);
+}}
+.outer-2JOHae.active-1W_Gl9, .outer-2JOHae.interactive-2zD88a:hover /* The card in Home -> Friend page background */
+{{
+    background-color: var(--theme-bg-layering-double) !important;
+}}
+.inset-SbsSFp /* The card in Home -> Friend page -> Inner Card */
+{{
+    background-color: var(--theme-bg-layering) !important;
 }}
 `.trim();
     document.head.appendChild(s);
@@ -263,6 +438,7 @@ border-radius: {Radius} {Radius} 0px 0px;
                 RefreshFrame();
             }
         };
+        
         WebView.WebMessageReceived += (_, e) =>
         {
             string s = e.TryGetWebMessageAsString();
@@ -280,11 +456,7 @@ border-radius: {Radius} {Radius} 0px 0px;
                 Hide();
             }
         };
-        
-        //TitleBarUI.Margin = new Thickness(0, 0, (SystemParameters.WindowCaptionButtonWidth+10) * 3, 0);
-        //this.TitleBar.Height = TitleBar.Height;
     }
-    
     private void OpenSettings(object sender, RoutedEventArgs e)
     {
         SettingsDialog.ResetRequiresReload();
@@ -322,6 +494,7 @@ public partial class MainWindow : Window
     public bool ForceClose { get; set; } = false;
     public MainWindow()
     {
+        AllowsTransparency = false;
         WindowInteropHelper = new WindowInteropHelper(this);
         InitializeComponent();
         Loaded += OnLoaded;
@@ -334,7 +507,7 @@ public partial class MainWindow : Window
         };
         SettingsDialog.OnSettingsChanged += () =>
         {
-            SetBackdrop((BackdropType)Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType, ignoreCase: true));
+            SetBackdrop((CustomPInvoke.BackdropType)Enum.Parse(typeof(CustomPInvoke.BackdropType), Settings.Default.BackdropType, ignoreCase: true));
         };
         //Icon = ImageSourceFromBitmap(ProgramResources.Logo);
         Back.Click += (_, _) =>
@@ -347,15 +520,9 @@ public partial class MainWindow : Window
         };
         SizeChanged += (_, _) =>
         {
-            if (WindowState == WindowState.Maximized)
-            {
-                TitleBar.Margin = new Thickness(7.5, 7.5, 0, 0);
-                WebView.Margin = new Thickness(7.5, 0, 7.5, 7.5);
-            } else
-            {
-                TitleBar.Margin = new Thickness(0);
-                WebView.Margin = new Thickness(0);
-            }
+            var a = WindowState == WindowState.Maximized ? 7.5 : 0;
+            TitleBar.Margin = new Thickness(a, a, 0, 0);
+            WebView.Margin = new Thickness(7.5, 0, 7.5, 7.5);
         };
         SetValue(WindowChrome.WindowChromeProperty, WindowChrome);
         WindowChrome.SetIsHitTestVisibleInChrome(Back, true);
@@ -367,7 +534,8 @@ public partial class MainWindow : Window
     }
     WindowChrome WindowChrome { get; } = new WindowChrome
     {
-        UseAeroCaptionButtons = true
+        UseAeroCaptionButtons = true,
+        ResizeBorderThickness = new Thickness(7.5)
     };
     public static ImageSource ImageSourceFromBitmap(Bitmap bmp)
     {
@@ -376,19 +544,19 @@ public partial class MainWindow : Window
         {
             return Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
         }
-        finally { CustomPInvoke.DeleteObject(handle); }
+        finally { Gdi32.DeleteObject(handle); }
     }
 
-    void SetBackdrop(BackdropType BackdropType) => SetBackdrop((int)BackdropType);
+    void SetBackdrop(CustomPInvoke.BackdropType BackdropType) => SetBackdrop((int)BackdropType);
     void SetBackdrop(int BackdropType)
     {
-        CustomPInvoke.SetWindowAttribute(
+        CustomPInvoke.DwmApi.SetWindowAttribute(
             Handle,
-            CustomPInvoke.DWMWINDOWATTRIBUTE.DWMWA_SYSTEMBACKDROP_TYPE,
+            CustomPInvoke.DwmApi.DWMWINDOWATTRIBUTE.DWMWA_SYSTEMBACKDROP_TYPE,
             BackdropType);
     }
 
     public WindowInteropHelper WindowInteropHelper { get; }
     public IntPtr Handle => WindowInteropHelper.Handle;
-
+    
 }

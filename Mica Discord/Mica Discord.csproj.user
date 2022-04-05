@@ -12,6 +12,9 @@
     <ApplicationDefinition Update="App.xaml">
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <EmbeddedResource Update="ProgramResources.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <Page Update="App.xaml">
       <SubType>Designer</SubType>
     </Page>

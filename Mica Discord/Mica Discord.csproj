@@ -2,36 +2,57 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-	<TargetFramework>net6.0-windows</TargetFramework>
+	<TargetFramework>net6.0-windows10.0.22000.0</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <AssemblyName>MicaDiscord</AssemblyName>
     <RootNamespace>MicaDiscord</RootNamespace>
-    <Version>1.6.0</Version>
+    <Version>1.8.0</Version>
     <UseWindowsForms>True</UseWindowsForms>
-    <PackageIcon>DiscordLogo.png</PackageIcon>
-    <ApplicationIcon>DiscordLogo.ico</ApplicationIcon>
+    <PackageIcon>Mica Discord.png</PackageIcon>
+    <ApplicationIcon>Mica Discord.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Experimental\**" />
+    <EmbeddedResource Remove="Experimental\**" />
+    <None Remove="Experimental\**" />
+    <Page Remove="Experimental\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <ApplicationDefinition Remove="App.xaml" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="DiscordLogo.ico" />
+    <Compile Remove="ThemeLabel.cs" />
+    <Compile Remove="WinForms.cs" />
+    <Compile Remove="WinForms.Designer.cs" />
+    <Compile Remove="WinFormsIntegrationTest.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="E:\.SysFolder\Downloads\DiscordLogo.png">
+    <EmbeddedResource Remove="WinForms.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Mica Discord.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\Get\source\repos\Mica Discord\Mica Discord\Resources\Mica Discord.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1150.38" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1189-prerelease" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="1.6.1" />
     <PackageReference Include="PInvoke.DwmApi" Version="0.7.104" />
     <PackageReference Include="PInvoke.UxTheme" Version="0.7.104" />
+    <PackageReference Include="PInvoke.Win32" Version="0.7.104" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,6 +72,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
       <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="ModernContextMenuForm.cs">
+      <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
 

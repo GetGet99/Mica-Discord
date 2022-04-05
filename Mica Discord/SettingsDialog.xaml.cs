@@ -19,12 +19,13 @@ public partial class SettingsDialog : Grid
         {
             if (IsVisible)
             {
-                RequiresReload = false;
-                Backdrop.SelectedItem = Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType);
+                Backdrop.SelectedItem = Enum.Parse(typeof(CustomPInvoke.BackdropType), Settings.Default.BackdropType);
                 ReplaceBackgroundToggle.Content = Settings.Default.ReplaceDiscordBackground ? "Disable" : "Enable";
                 UseBackdropAnyway.Content = Settings.Default.UseBackdropAnyway ? "Use Solid Color" : "Enable Anyway";
                 Systray.IsChecked = Settings.Default.UseSystemTray;
                 ModeAwareCSS.IsChecked = Settings.Default.ModeAwareCSS;
+                ExcessiveAccentColor.IsChecked = Settings.Default.ExcessiveAccentColor;
+                RequiresReload = false;
             }
         };
         Backdrop.SelectionChanged += (_, _) =>
@@ -96,6 +97,12 @@ public partial class SettingsDialog : Grid
     private void ModeAwareCSSToggled(object sender, RoutedEventArgs e)
     {
         Settings.Default.ModeAwareCSS = ModeAwareCSS.IsChecked ?? false;
+        Settings.Default.Save();
+        RequiresReload = true;
+    }
+    private void ExcessiveAccentColorToggled(object sender, RoutedEventArgs e)
+    {
+        Settings.Default.ExcessiveAccentColor = ExcessiveAccentColor.IsChecked ?? false;
         Settings.Default.Save();
         RequiresReload = true;
     }

@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:MicaDiscord"
              mc:Ignorable="d" 
              xmlns:cg="clr-namespace:CustomGrid"
+             xmlns:cp="clr-namespace:CustomPInvoke"
              Height="450" Width="800"
              d:Background="DimGray"
       >
@@ -35,11 +36,11 @@
                     </Label>
                     <ComboBox cg:CustomGrid.GridType="Auto" VerticalAlignment="Center" x:Name="Backdrop" Background="#3fff" BorderBrush="#00000000" Style="{StaticResource {x:Static ToolBar.ComboBoxStyleKey}}" Foreground="White">
                         <ComboBox.ItemsSource>
-                            <x:Array Type="local:BackdropType">
-                                <local:BackdropType>Regular</local:BackdropType>
-                                <local:BackdropType>Acrylic</local:BackdropType>
-                                <local:BackdropType>Mica</local:BackdropType>
-                                <local:BackdropType>Tabbed</local:BackdropType>
+                            <x:Array Type="cp:BackdropType">
+                                <cp:BackdropType>Regular</cp:BackdropType>
+                                <cp:BackdropType>Acrylic</cp:BackdropType>
+                                <cp:BackdropType>Mica</cp:BackdropType>
+                                <cp:BackdropType>Tabbed</cp:BackdropType>
                             </x:Array>
                         </ComboBox.ItemsSource>
                     </ComboBox>
@@ -89,6 +90,20 @@
                         Margin="10"
                         Checked="ModeAwareCSSToggled"
                         Unchecked="ModeAwareCSSToggled">
+                    </CheckBox>
+                </cg:ColumnGrid>
+                <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">
+                    <Label Foreground="White" VerticalAlignment="Center">
+                        Use Excessive Accent Color (warning: it might not be good for you!)
+                    </Label>
+                    <CheckBox
+                        x:Name="ExcessiveAccentColor"
+                        cg:CustomGrid.GridType="Auto"
+                        Foreground="White"
+                        VerticalAlignment="Center"
+                        Margin="10"
+                        Checked="ExcessiveAccentColorToggled"
+                        Unchecked="ExcessiveAccentColorToggled">
                     </CheckBox>
                 </cg:ColumnGrid>
                 <Button Template="{StaticResource NoDisabledBackground}" cg:CustomGrid.GridType="Auto" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" Click="OpenAppFolder">

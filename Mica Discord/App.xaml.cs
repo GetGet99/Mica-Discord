@@ -4,7 +4,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
 using WPFApplication = System.Windows.Application;
-
+using Microsoft.Web.WebView2.Core;
 namespace MicaDiscord;
 
 /// <summary>
@@ -48,6 +48,45 @@ public partial class App : WPFApplication
             })) { ForeColor = Color.White }
             });
             NotifyIcon.Visible = Settings.Default.UseSystemTray;
+            if (Settings.Default.ExperimentalModernContextMenu)
+            {
+                var cm = new ModernContextMenuForm();
+                cm.MenuList.Add((
+                    Text: "Open",
+                    Image: default,
+                    ItemKind: CoreWebView2ContextMenuItemKind.Command,
+                    Edit: default,
+                    OnClick: (_) => Dispatcher.Invoke(OpenMenu)
+                ));
+                cm.MenuList.Add((
+                    Text: "Exit",
+                    Image: default,
+                    ItemKind: CoreWebView2ContextMenuItemKind.Command,
+                    Edit: default,
+                    OnClick: (_) =>
+                    {
+                        try
+                        {
+                            if ((MainWindow is MainWindow window) && (window is not null))
+                            {
+                                window.ForceClose = true;
+                                window.Close();
+                            }
+                        }
+                        finally
+                        {
+                            Environment.Exit(0);
+                        }
+                    }
+                ));
+
+                NotifyIcon.MouseMove += (_, e) =>
+                {
+                    var pos = Cursor.Position;
+                    cm.UpdatePosition(pos.X, pos.Y);
+                    cm.Activate();
+                };
+            }
         }
         catch (Exception ex)
         {
@@ -73,15 +112,16 @@ public partial class App : WPFApplication
     [STAThread]
     public static void Main()
     {
-        using Mutex mutex = new(false, "Mica Discord");
-        if (!mutex.WaitOne(0, false))
-        {
-            System.Windows.Forms.MessageBox.Show("Instance already running");
-            return;
-        }
+        //using Mutex mutex = new(false, "Mica Discord");
+        //if (!mutex.WaitOne(0, false))
+        //{
+        //    System.Windows.Forms.MessageBox.Show("Instance already running");
+        //    return;
+        //}
         var app = new App();
         app.InitializeComponent();
         app.Run();
+        //System.Windows.Forms.Application.Run(new WinForms());
 
     }
 }

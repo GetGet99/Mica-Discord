@@ -61,7 +61,7 @@ namespace MicaDiscord {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool ModeAwareCSS {
             get {
                 return ((bool)(this["ModeAwareCSS"]));
@@ -80,6 +80,27 @@ namespace MicaDiscord {
             }
             set {
                 this["UseBackdropAnyway"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ExcessiveAccentColor {
+            get {
+                return ((bool)(this["ExcessiveAccentColor"]));
+            }
+            set {
+                this["ExcessiveAccentColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ExperimentalModernContextMenu {
+            get {
+                return ((bool)(this["ExperimentalModernContextMenu"]));
             }
         }
     }
