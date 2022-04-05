@@ -38,7 +38,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="The CSS.css" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Mica Discord.ico" />
+    <Content Include="The CSS.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -84,9 +91,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
       <Generator>SettingsSingleFileGenerator</Generator>
       <CustomToolNamespace>MicaDiscord</CustomToolNamespace>
-    </None>
-    <None Update="The CSS.css">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
