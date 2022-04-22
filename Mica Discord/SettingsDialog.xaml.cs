@@ -19,10 +19,14 @@ public partial class SettingsDialog : Grid
         {
             if (IsVisible)
             {
+#if DEBUG
+                ReloadCSSButton.Visibility = Visibility.Hidden;
+#endif
                 Backdrop.SelectedItem = Enum.Parse(typeof(CustomPInvoke.BackdropType), Settings.Default.BackdropType);
                 ReplaceBackgroundToggle.Content = Settings.Default.ReplaceDiscordBackground ? "Disable" : "Enable";
                 UseBackdropAnyway.Content = Settings.Default.UseBackdropAnyway ? "Use Solid Color" : "Enable Anyway";
                 Systray.IsChecked = Settings.Default.UseSystemTray;
+                DevTools.Content = Settings.Default.EnableDevTools ? "Disable" : "Enable";
                 ModeAwareCSS.IsChecked = Settings.Default.ModeAwareCSS;
                 ExcessiveAccentColor.IsChecked = Settings.Default.ExcessiveAccentColor;
                 RequiresReload = false;
@@ -54,6 +58,30 @@ public partial class SettingsDialog : Grid
             }
             Settings.Default.ReplaceDiscordBackground = newValue;
             ReplaceBackgroundToggle.Content = newValue ? "Disable" : "Enable";
+            Settings.Default.Save();
+            OnSettingsChanged?.Invoke();
+            RequiresReload = true;
+        };
+        DevTools.Click += (_, _) =>
+        {
+            bool newValue = !Settings.Default.EnableDevTools;
+            if (newValue)
+            {
+                if (MessageBox.Show(
+
+                    caption: "Warning",
+                    messageBoxText: "If somebody asked you to turn this on (or you did turn it on yourself), please remember that " +
+                    "you can get your discord account hacked if you copy and paste malicious code in the DevTools Console.\n" +
+                    "Are you sure you still want to continue?\n\n" +
+                    "NOTE: We do not take any responsibility of anything happening to your Discord account regardless of clicking Yes or No!",
+                    button: MessageBoxButton.YesNo,
+                    icon: MessageBoxImage.Warning
+                    )
+                != MessageBoxResult.Yes)
+                    return;
+            }
+            Settings.Default.EnableDevTools = newValue;
+            DevTools.Content = newValue ? "Disable" : "Enable";
             Settings.Default.Save();
             OnSettingsChanged?.Invoke();
             RequiresReload = true;
@@ -105,5 +133,14 @@ public partial class SettingsDialog : Grid
         Settings.Default.ExcessiveAccentColor = ExcessiveAccentColor.IsChecked ?? false;
         Settings.Default.Save();
         RequiresReload = true;
+    }
+
+    private void ReloadCSS(object sender, RoutedEventArgs e)
+    {
+#if DEBUG
+#else
+        MainWindow.DefinedCSS = System.IO.File.ReadAllText("./The CSS.css");
+        RequiresReload = true;
+#endif
     }
 }

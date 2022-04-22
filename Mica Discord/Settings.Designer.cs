@@ -103,5 +103,17 @@ namespace MicaDiscord {
                 return ((bool)(this["ExperimentalModernContextMenu"]));
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool EnableDevTools {
+            get {
+                return ((bool)(this["EnableDevTools"]));
+            }
+            set {
+                this["EnableDevTools"] = value;
+            }
+        }
     }
 }

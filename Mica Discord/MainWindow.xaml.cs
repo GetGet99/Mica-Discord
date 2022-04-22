@@ -10,17 +10,21 @@ using System.Windows.Shell;
 using Windows.UI.ViewManagement;
 using AccentColorTypes = CustomPInvoke.UxTheme.AccentColorTypes;
 using System.IO;
-//using WindowMessage = PInvoke.User32.WindowMessage;
+using System.Windows.Input;
+using System.Windows.Forms;
+using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace MicaDiscord;
 
 public partial class MainWindow : Window
 {
-    static UISettings UISettings { get; } = new();
+#pragma warning disable CA1416 // Validate platform compatibility
+    static UISettings? UISettings { get; } = NotSupportedBuild ? null : new();
+#pragma warning restore CA1416 // Validate platform compatibility
     static bool IsExcessiveAccentColorEnabled => Settings.Default.ExcessiveAccentColor;
-    static string DefinedCSS
+    public static string DefinedCSS
 #if DEBUG
-        => File.ReadAllText("../../../The CSS.css");// Read File Every time
+        => File.Exists("../../../The CSS.css") ? File.ReadAllText("../../../The CSS.css") : File.ReadAllText("The CSS.css");// Read File Every time
 #else
         = File.ReadAllText("./The CSS.css"); // Read only once
 #endif
@@ -38,18 +42,19 @@ public partial class MainWindow : Window
         }
         get => _Dark;
     }
-    
+
     void OnLoaded(object sender, RoutedEventArgs e)
     {
         void RefreshFrame()
         {
             HwndSource mainWindowSrc = HwndSource.FromHwnd(Handle);
-            
+
             if (NotSupportedBuild && !Settings.Default.UseBackdropAnyway)
             {
                 mainWindowSrc.CompositionTarget.BackgroundColor = Dark ? System.Windows.Media.Color.FromRgb(50, 50, 50) :
                        System.Windows.Media.Color.FromRgb(250, 250, 250);
-            } else
+            }
+            else
             {
                 mainWindowSrc.CompositionTarget.BackgroundColor = System.Windows.Media.Color.FromArgb(0, 0, 0, 0);
                 DwmApi.DwmExtendFrameIntoClientArea(Handle, new()
@@ -70,48 +75,59 @@ public partial class MainWindow : Window
         {
             return color.R + color.G + color.B < (255 * 3 - color.R - color.G - color.B);
         }
-        RefreshDarkMode(dark: IsDarkBackground(UISettings.GetColorValue(UIColorType.Background)));
+        if (UISettings != null)
+#pragma warning disable CA1416 // Validate platform compatibility
+            RefreshDarkMode(dark: IsDarkBackground(UISettings.GetColorValue(UIColorType.Background)));
+#pragma warning restore CA1416 // Validate platform compatibility
         SizeChanged += (_, _) => RefreshFrame();
         IsVisibleChanged += (_, _) => RefreshFrame();
-        
+
         Width += 1;
-        bool UserRequestOpenNewWindow = false;
         SetBackdrop((CustomPInvoke.BackdropType)Enum.Parse(typeof(CustomPInvoke.BackdropType), Settings.Default.BackdropType, ignoreCase: true));
         WebView.CoreWebView2InitializationCompleted += (_, _) =>
         {
             var CoreWebView2 = WebView.CoreWebView2;
+            CoreWebView2.PermissionRequested += (_, e) =>
+            {
+                MessageBox.Show("PermissionRequested", e.PermissionKind.ToString());
+            };
             CoreWebView2.NewWindowRequested += (_, e) =>
             {
-                if (UserRequestOpenNewWindow)
+                if (Control.ModifierKeys.HasFlag(Keys.Shift)) return;
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                 {
-                    UserRequestOpenNewWindow = false;
-                    return;
-                }
-                System.Diagnostics.Process.Start("explorer", e.Uri);
+                    FileName = e.Uri,
+                    UseShellExecute = true
+                });
                 e.Handled = true;
             };
-            
-            CoreWebView2.ContextMenuRequested += (_, e) =>
-            {
-                if (e.ContextMenuTarget.HasLinkUri)
-                {
-                    var newItem = CoreWebView2.Environment.CreateContextMenuItem("Open In Default Browser", null, CoreWebView2ContextMenuItemKind.Command);
-                    newItem.CustomItemSelected += (_, e2) =>
-                    {
-                        System.Diagnostics.Process.Start("explorer", e.ContextMenuTarget.LinkUri);
-                    };
-                    e.MenuItems.Insert(0, CoreWebView2.Environment.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
-                    e.MenuItems.Insert(0, newItem);
 
-                    foreach (var menu in e.MenuItems)
-                    {
-                        if (menu.Label.ToLower().Replace("&","").Contains("new window")) menu.CustomItemSelected += (_, e) =>
-                        {
-                            UserRequestOpenNewWindow = true;
-                        };
-                    }
-                }
-            };
+            //CoreWebView2.ContextMenuRequested += (_, e) =>
+            //{
+            //    if (e.ContextMenuTarget.HasLinkUri)
+            //    {
+            //        Stream Icon = null;
+            //        foreach (var menu in e.MenuItems)
+            //        {
+            //            if (menu.Label.ToLower().Replace("&", "").Contains("new window")) menu.CustomItemSelected += (_, e) =>
+            //            {
+            //                Icon = menu.Icon;
+            //            };
+            //        }
+            //        var newItem = CoreWebView2.Environment.CreateContextMenuItem("Open In Default Browser (Shift + Click)", Icon, CoreWebView2ContextMenuItemKind.Command);
+            //        newItem.CustomItemSelected += (_, e2) =>
+            //        {
+            //            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            //            {
+            //                FileName = e.ContextMenuTarget.LinkUri,
+            //                UseShellExecute = true
+            //            });
+
+            //        };
+            //        e.MenuItems.Insert(0, CoreWebView2.Environment.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
+            //        e.MenuItems.Insert(0, newItem);
+            //    }
+            //};
             var handle = WebView.Handle;
             _ = User32.SetWindowLong(handle, User32.WindowLongIndexFlags.GWL_EXSTYLE,
                 (User32.SetWindowLongFlags)User32.GetWindowLong(handle, User32.WindowLongIndexFlags.GWL_EXSTYLE)
@@ -125,7 +141,8 @@ public partial class MainWindow : Window
                 {
                     title = "";
                     Title = "Mica Discord";
-                } else Title = $"Mica Discord - {title}";
+                }
+                else Title = $"Mica Discord - {title}";
                 WebsiteTitle.Text = title;
             };
             CoreWebView2.HistoryChanged += delegate
@@ -134,6 +151,51 @@ public partial class MainWindow : Window
                 Forward.IsEnabled = WebView.CanGoForward;
                 RefreshFrame();
             };
+
+            CoreWebView2.Settings.AreDevToolsEnabled = Settings.Default.EnableDevTools;
+            void DevToolsCheck(object _, System.Windows.Input.KeyEventArgs e)
+            {
+                if (e.Key == Key.I && Control.ModifierKeys == (Keys.Control | Keys.Shift))
+                    goto OK;
+                if (e.Key == Key.C && Control.ModifierKeys == (Keys.Control | Keys.Shift))
+                    goto OK;
+                if (e.Key == Key.F12)
+                    goto OK;
+
+                e.Handled = false;
+                return;
+            OK:
+                if (Settings.Default.EnableDevTools)
+                {
+                    if (Settings.Default.ReplaceDiscordBackground)
+                    {
+                        Windows.UI.Color PrimaryColor = default;
+                        if (SupportAccent)
+                        {
+#pragma warning disable CA1416 // Validate platform compatibility
+                            PrimaryColor = UISettings?.GetColorValue(UIColorType.AccentLight3) ?? default;
+#pragma warning restore CA1416 // Validate platform compatibility
+                        }
+                        CoreWebView2.ExecuteScriptAsync($@"
+(function() {{
+let baseStyles = [
+  'color: rgb({PrimaryColor.R}, {PrimaryColor.G}, {PrimaryColor.B})',
+  'font-size: 100px',
+] 
+console.log('%cWARNING!',baseStyles.join(';'));
+baseStyles = [
+  'color: rgb({PrimaryColor.R}, {PrimaryColor.G}, {PrimaryColor.B})',
+  'font-size: 50px',
+] ;
+console.log('%cDO NOT Paste ANYTHING that you do not understand how it works.', baseStyles.join(';'));
+}})()");
+                    }
+                    e.Handled = false;
+                }
+                else
+                    MessageBox.Show(caption: "Warning", text: "DevTools is currently disabled. You can enable it in Settings");
+            }
+            WebView.KeyDown += DevToolsCheck;
 
 
             RefreshFrame();
@@ -150,7 +212,7 @@ public partial class MainWindow : Window
                 if (Dark is false && Light is false)
                     Dark = this.Dark; // Don't change
                 Windows.UI.Color PrimaryColor = default, DisabledColor = default, HoverColor = default, Accent = default;
-                if (SupportAccent)
+                if (SupportAccent && UISettings != null)
                 {
 #pragma warning disable CA1416 // Validate platform compatibility
                     PrimaryColor = UISettings.GetColorValue(UIColorType.AccentLight3);//CustomPInvoke.GetAccentColor(Dark ? AccentColorTypes.ImmersiveSaturatedHighlight : AccentColorTypes.ImmersiveSaturatedSelectionBackground);
@@ -197,7 +259,7 @@ public partial class MainWindow : Window
 (function () {{
     let s = document.createElement('style');
     s.innerHTML = `
-* {{ /* System Color */"+
+* {{ /* System Color */" +
 (SupportAccent ?
 @$"
     --sys-accent-prop: {Accent.R}, {Accent.G}, {Accent.B};
@@ -232,15 +294,15 @@ public partial class MainWindow : Window
     document.head.appendChild(s);
 })()
 ").Trim());
-                await WebView.CoreWebView2.ExecuteScriptAsync($@"
-(function () {{
+//                await WebView.CoreWebView2.ExecuteScriptAsync($@"
+//(function () {{
     
-}})()
-".Trim());
+//}})()
+//".Trim());
                 RefreshFrame();
             }
         };
-        
+
         WebView.WebMessageReceived += (_, e) =>
         {
             string s = e.TryGetWebMessageAsString();
@@ -271,7 +333,8 @@ public partial class MainWindow : Window
         try
         {
             WebView.Reload();
-        } catch { }
+        }
+        catch { }
     }
     public static SolidColorBrush GetColorFromHex(string hexaColor)
     {
@@ -310,6 +373,11 @@ public partial class MainWindow : Window
         SettingsDialog.OnSettingsChanged += () =>
         {
             SetBackdrop((CustomPInvoke.BackdropType)Enum.Parse(typeof(CustomPInvoke.BackdropType), Settings.Default.BackdropType, ignoreCase: true));
+            var w = WebView.CoreWebView2;
+            if (w != null)
+            {
+                w.Settings.AreDevToolsEnabled = Settings.Default.EnableDevTools;
+            }
         };
         //Icon = ImageSourceFromBitmap(ProgramResources.Logo);
         Back.Click += (_, _) =>
@@ -360,5 +428,5 @@ public partial class MainWindow : Window
 
     public WindowInteropHelper WindowInteropHelper { get; }
     public IntPtr Handle => WindowInteropHelper.Handle;
-    
+
 }

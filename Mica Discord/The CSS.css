@@ -19,12 +19,14 @@
     --theme-bg-layering: rgba(var(--theme-layering-prop),0.05);
     --theme-bg-layering-half: rgba(var(--theme-layering-prop),0.025);
     --theme-floating-prop: var(--sys-floating-strength), var(--sys-floating-strength), var(--sys-floating-strength);
-    --theme-bg-floating: rgba(var(--theme-floating-prop),0.75);
+    --theme-bg-floating: rgba(var(--theme-normal-prop),0.75);
     --theme-scrollbar-color: rgba(var(--theme-layering-prop),0.25);
     --theme-normal-prop: var(--sys-normal-strength),var(--sys-normal-strength),var(--sys-normal-strength);
     --theme-border-color: rgba(var(--theme-layering-prop),0.5);
 }
 * {
+    --edge-grey-background: transparent !important; /* No Internet Error */
+
     --background-primary: var(--theme-bg-layering);
     --background-secondary: transparent;
     --background-secondary-alt: rgba(var(--theme-layering-prop),0.075);
@@ -92,6 +94,14 @@
     --brand-experiment-90a: rgba(var(--sys-accent-prop),0.9);
     --brand-experiment-95a: rgba(var(--sys-accent-prop),0.95);
 }
+.container-2RRFHK /* Loading screen */
+{
+    background-color: var(--theme-bg-floating);
+}
+.unread-2wipsx /* The text NEW UNREADS on the top */
+{
+    background-color: var(--sys-accent-color);
+}
 .appMount-2yBXZl /* Main application */
 {
     border-radius: var(--sys-border-radius);
@@ -102,8 +112,9 @@
 }
 code, /* Code blocks */
 article, /* Embeded */
-*[class*="lookFilled"], /* Any spcial controls in chat or somewhere else (combobox, etc.) */
+*[class*="lookFilled"]:not(*[class*="colorBrand"]):not(*[class*="colorRed"]), /* Any spcial controls in chat or somewhere else (combobox, etc.) */
 .container-2cd8Mz,
+.accountProfileCard-lbN7n-, /* Settings Page -> My Account -> [your profile background] */
 .inset-SbsSFp /* The card in Home -> Friend page -> Inner Card */
 {
     background-color: var(--theme-bg-layering) !important;
@@ -116,6 +127,28 @@ div[aria-label="Members"] /* Members pane on the right of the chat */
 *[class*="lookFilled"]:hover /* Any spcial controls in chat or somewhere else (combobox, etc.) but hover */
 {
     border-color: var(--theme-border-color) !important;
+}
+/* Blur Background */
+.menu-1QACrS::before, /* Context Menu On Message */
+.autocomplete-3NRXG8::before, /* Autocomplete when you type @username or #text-channel */
+[class*="popout"]::before, /* Popout (Class) */
+[id*="popout"]::before /* Thread Menu and Pinned Message */
+{
+    content: ' ';
+    position: absolute;
+    left:0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    backdrop-filter: blur(3px);
+    z-index: -1;
+}
+/* #popout_33>div {
+    background-color: red;
+} */
+.colorDefault-CDqZdO.focused-3qFvc8 /* Context Menu Color Hover */
+{
+    background-color: rgba(var(--sys-accent-prop),0.5);
 }
 /* [Typing message box: What Discord does with it]
 
@@ -134,6 +167,20 @@ No, I don't want that since it will be hard to style later.
 {
     width: 0px !important;
     height: 0px !important;
+}
+.autocomplete-3NRXG8 /* Autocomplete when you type @username or #text-channel */
+{
+    background-color: var(--theme-bg-floating) !important;
+}
+.autocomplete-3NRXG8 /* Autocomplete when you type @username or #text-channel THEN */
+.selected-3H3-RC /* Hover */
+{
+    background-color: var(--theme-bg-layering) !important;
+}
+.autocomplete-3NRXG8 /* Autocomplete when you type @username or #text-channel THEN */
+.categoryHeader-OpJ1Ly /* Command Header */
+{
+    background-color: transparent !important;
 }
 .scroller-kQBbkU::-webkit-scrollbar-track /* Main scroll bar */
 {
@@ -176,6 +223,10 @@ border-radius: var(--sys-border-radius) var(--sys-border-radius) 0px 0px;
     width: 4px;
     background: var(--sys-accent-light-3-color);
     border-radius: 4px;
+}
+.expandedFolderBackground-1kSAf6
+{
+    background: var(--theme-bg-layering);
 }
 .gradientContainer-phMG8d /* In-Call Gradient effect on top and bottom */
 {
@@ -222,16 +273,16 @@ border-radius: var(--sys-border-radius) var(--sys-border-radius) 0px 0px;
 .hljs-comment {
     color: seagreen !important;
 }
-*[class*="popout"] /* Popout (Class) */
+[class*="popout"] /* Popout (Class) */
 {
     border-width: 1px;
-    border-color: var(--theme-border-color);
-    background-color: rgba(var(--theme-normal-prop),0.75);
+    border-color: var(--theme-border-color) !important;
+    background-color: var(--theme-bg-floating) !important;
 }
 [id*="popout"] /* Thread Menu and Pinned Message */
 {
-    background-color: var(--theme-bg-floating);
-    border-radius: var(--sys-border-radius);
+    background-color: var(--theme-bg-floating) !important;
+    border-radius: var(--sys-border-radius) !important;
 }
 .outer-2JOHae.active-1W_Gl9,
 .outer-2JOHae.interactive-2zD88a:hover /* The card in Home -> Friend page background */

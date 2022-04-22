@@ -58,7 +58,7 @@
                 </cg:ColumnGrid>
                 <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">
                     <Label Foreground="White" VerticalAlignment="Center">
-                        Replace Discord Background
+                        Enable Fluent Design (NOTE: Requires JavaScript and CSS Injection)
                     </Label>
                     <Button Template="{StaticResource NoDisabledBackground}" cg:CustomGrid.GridType="Auto" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" x:Name="ReplaceBackgroundToggle">
                         Enable
@@ -77,6 +77,14 @@
                         Checked="SystrayToggled"
                         Unchecked="SystrayToggled">
                     </CheckBox>
+                </cg:ColumnGrid>
+                <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">
+                    <Label Foreground="White" VerticalAlignment="Center">
+                        Enable DevTools
+                    </Label>
+                    <Button Template="{StaticResource NoDisabledBackground}" cg:CustomGrid.GridType="Auto" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" x:Name="DevTools">
+                        Enable
+                    </Button>
                 </cg:ColumnGrid>
                 <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">
                     <Label Foreground="White" VerticalAlignment="Center">
@@ -106,9 +114,14 @@
                         Unchecked="ExcessiveAccentColorToggled">
                     </CheckBox>
                 </cg:ColumnGrid>
-                <Button Template="{StaticResource NoDisabledBackground}" cg:CustomGrid.GridType="Auto" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" Click="OpenAppFolder">
-                    Open App Location Folder
-                </Button>
+                <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">
+                    <Button Template="{StaticResource NoDisabledBackground}" cg:CustomGrid.GridType="Star" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" Click="OpenAppFolder">
+                        Open App Location Folder
+                    </Button>
+                    <Button Template="{StaticResource NoDisabledBackground}" cg:CustomGrid.GridType="Star" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" Click="ReloadCSS" x:Name="ReloadCSSButton">
+                        For Developer: Reload CSS Stylesheet (The CSS.css)
+                    </Button>
+                </cg:ColumnGrid>
             </cg:RowGrid>
         </cg:Overlay>
     </Border>
