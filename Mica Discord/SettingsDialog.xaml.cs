@@ -28,7 +28,6 @@ public partial class SettingsDialog : Grid
                 Systray.IsChecked = Settings.Default.UseSystemTray;
                 DevTools.Content = Settings.Default.EnableDevTools ? "Disable" : "Enable";
                 ModeAwareCSS.IsChecked = Settings.Default.ModeAwareCSS;
-                ExcessiveAccentColor.IsChecked = Settings.Default.ExcessiveAccentColor;
                 RequiresReload = false;
             }
         };
@@ -114,7 +113,11 @@ public partial class SettingsDialog : Grid
 
     private void OpenAppFolder(object sender, RoutedEventArgs e)
     {
-        Process.Start("powershell", new string[] { "-c", $"Invoke-Item \"{AppDomain.CurrentDomain.BaseDirectory}\"" });
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = AppDomain.CurrentDomain.BaseDirectory,
+            UseShellExecute = true
+        });
     }
 
     private void SystrayToggled(object sender, RoutedEventArgs e)
@@ -125,12 +128,6 @@ public partial class SettingsDialog : Grid
     private void ModeAwareCSSToggled(object sender, RoutedEventArgs e)
     {
         Settings.Default.ModeAwareCSS = ModeAwareCSS.IsChecked ?? false;
-        Settings.Default.Save();
-        RequiresReload = true;
-    }
-    private void ExcessiveAccentColorToggled(object sender, RoutedEventArgs e)
-    {
-        Settings.Default.ExcessiveAccentColor = ExcessiveAccentColor.IsChecked ?? false;
         Settings.Default.Save();
         RequiresReload = true;
     }

@@ -1,17 +1,10 @@
-﻿using System;
+﻿extern alias WV2;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Forms.Integration;
 using PInvoke;
-using Microsoft.Web.WebView2.Core;
-using System.Runtime.InteropServices;
-using Microsoft.Web.WebView2.WinForms;
+using WV2::Microsoft.Web.WebView2.Core;
 namespace MicaDiscord;
 
 public partial class ModernContextMenuForm : Form

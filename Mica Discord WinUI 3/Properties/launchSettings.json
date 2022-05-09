@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Mica Discord WinUI 3 (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Mica Discord WinUI 3 (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -1,10 +1,15 @@
-﻿using System;
+﻿extern alias WV2;
+using System;
 using System.Drawing;
 using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
 using WPFApplication = System.Windows.Application;
-using Microsoft.Web.WebView2.Core;
+using WV2::Microsoft.Web.WebView2.Core;
+#if WINDOWS10_0_17763_0_OR_GREATER
+using Microsoft.Windows.ApplicationModel.DynamicDependency;
+#endif
+using MW = MicaDiscord.MainWindow;
 namespace MicaDiscord;
 
 /// <summary>
@@ -15,7 +20,7 @@ public partial class App : WPFApplication
     NotifyIcon NotifyIcon { get; } = new NotifyIcon
     {
         Text = "Mica Discord",
-        ContextMenuStrip = new ContextMenuStrip() { BackColor = Color.FromArgb(50, 50, 50), ShowImageMargin = false },
+        ContextMenuStrip = new ContextMenuStrip() { BackColor = Color.FromArgb(50, 50, 50), ShowImageMargin = false, RenderMode = ToolStripRenderMode.System },
         Icon = ToIcon(ProgramResources.Logo)
     };
     static Icon ToIcon(Bitmap img)
@@ -32,8 +37,8 @@ public partial class App : WPFApplication
             //var mainwindow = (MainWindow)MainWindow;
             NotifyIcon.ContextMenuStrip.Items.AddRange(new ToolStripItem[]
             {
-            new ToolStripButton("Open", default, (_, _) => Dispatcher.Invoke(OpenMenu)) { ForeColor = Color.White },
-            new ToolStripButton("Exit", default, (_, _) => Dispatcher.Invoke(() => {
+            new ToolStripMenuItem("Open", default, (_, _) => Dispatcher.Invoke(OpenMenu)) { ForeColor = Color.White },
+            new ToolStripMenuItem("Exit", default, (_, _) => Dispatcher.Invoke(() => {
                 try
                 {
                     if ((MainWindow is MainWindow window) && (window is not null))
@@ -118,9 +123,16 @@ public partial class App : WPFApplication
         //    System.Windows.Forms.MessageBox.Show("Instance already running");
         //    return;
         //}
+#if WINDOWS10_0_17763_0_OR_GREATER
+        Bootstrap.Initialize(0x00010000);
+#endif
         var app = new App();
         app.InitializeComponent();
         app.Run();
+
+#if WINDOWS10_0_17763_0_OR_GREATER
+        Bootstrap.Shutdown();
+#endif
         //System.Windows.Forms.Application.Run(new WinForms());
 
     }

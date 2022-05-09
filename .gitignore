@@ -1,6 +1,12 @@
 .vs
 .vscode
+Mica Discord WPF/bin
+Mica Discord WPF/obj
 Mica Discord/bin
 Mica Discord/obj
-Mica Discord Old/bin
-Mica Discord Old/obj
+Mica Discord UWP/bin
+Mica Discord UWP/obj
+Mica Discord WinUI 3/bin
+Mica Discord WinUI 3/obj
+CSharpUI/bin
+CSharpUI/obj

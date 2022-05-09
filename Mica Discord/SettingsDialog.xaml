@@ -101,20 +101,6 @@
                     </CheckBox>
                 </cg:ColumnGrid>
                 <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">
-                    <Label Foreground="White" VerticalAlignment="Center">
-                        Use Excessive Accent Color (warning: it might not be good for you!)
-                    </Label>
-                    <CheckBox
-                        x:Name="ExcessiveAccentColor"
-                        cg:CustomGrid.GridType="Auto"
-                        Foreground="White"
-                        VerticalAlignment="Center"
-                        Margin="10"
-                        Checked="ExcessiveAccentColorToggled"
-                        Unchecked="ExcessiveAccentColorToggled">
-                    </CheckBox>
-                </cg:ColumnGrid>
-                <cg:ColumnGrid cg:CustomGrid.GridType="Pixel" cg:CustomGrid.GridValue="40">
                     <Button Template="{StaticResource NoDisabledBackground}" cg:CustomGrid.GridType="Star" Foreground="White" VerticalAlignment="Center" FontFamily="Calibri Light" Click="OpenAppFolder">
                         Open App Location Folder
                     </Button>

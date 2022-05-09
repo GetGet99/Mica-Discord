@@ -1,62 +1,169 @@
-﻿using Microsoft.Web.WebView2.Core;
+﻿extern alias WV2;
+using WV2::Microsoft.Web.WebView2.Core;
 using PInvoke;
 using System;
 using System.Drawing;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shell;
+#if WINDOWS10_0_17763_0_OR_GREATER
 using Windows.UI.ViewManagement;
+#endif
 using AccentColorTypes = CustomPInvoke.UxTheme.AccentColorTypes;
 using System.IO;
 using System.Windows.Input;
 using System.Windows.Forms;
 using MessageBox = System.Windows.Forms.MessageBox;
+#if WINDOWS10_0_17763_0_OR_GREATER
+using WinRT.Interop;
+using Microsoft.UI.Windowing;
+using Microsoft.UI;
+using AppWindow = Microsoft.UI.Windowing.AppWindow;
+using WinUIColor = Windows.UI.Color;
+#endif
+using Colors = System.Windows.Media.Colors;
+using SysDrawColor = System.Drawing.Color;
+using Color = System.Windows.Media.Color;
+using Button = System.Windows.Controls.Button;
+using Control = System.Windows.Forms.Control;
 
 namespace MicaDiscord;
 
 public partial class MainWindow : Window
 {
-#pragma warning disable CA1416 // Validate platform compatibility
-    static UISettings? UISettings { get; } = NotSupportedBuild ? null : new();
-#pragma warning restore CA1416 // Validate platform compatibility
-    static bool IsExcessiveAccentColorEnabled => Settings.Default.ExcessiveAccentColor;
+#if WINDOWS10_0_17763_0_OR_GREATER
+    static UISettings UISettings { get; } = new();
+#endif
     public static string DefinedCSS
 #if DEBUG
         => File.Exists("../../../The CSS.css") ? File.ReadAllText("../../../The CSS.css") : File.ReadAllText("The CSS.css");// Read File Every time
 #else
         = File.ReadAllText("./The CSS.css"); // Read only once
 #endif
-    const string Radius = "0.5rem";
-    public static readonly bool NotSupportedBuild = Environment.OSVersion.Version.Build < 22523;
-    public static readonly bool SupportAccent = Environment.OSVersion.Version.Major >= 10;
+    public static string DefinedJavascript
+#if DEBUG
+        => File.Exists("../../../MicaDiscordScript.js") ? File.ReadAllText("../../../MicaDiscordScript.js") : File.ReadAllText("MicaDiscordScript.js");// Read File Every time
+#else
+        = File.ReadAllText("./MicaDiscordScript.js"); // Read only once
+#endif
+    public static bool NotSupportedBuild => Environment.OSVersion.Version.Build < 22523;
+    public static bool IsWin11 => Environment.OSVersion.Version.Build > 22000;
+    public static bool IsWin7 => Environment.OSVersion.Version.Major < 8 && Environment.OSVersion.Version.Major >= 7;
     bool DiscordEffectApplied = false;
+    bool NewSDKTitleBar = false;
     bool _Dark = true;
+    Action? ThemeChanged = null;
     bool Dark
     {
         set
         {
             _Dark = value;
-            if (!IsExcessiveAccentColorEnabled) (Resources["Color"] as SolidColorBrush ?? throw new NullReferenceException()).Color = value ? Colors.White : Colors.Black;
+            ThemeChanged?.Invoke();
         }
         get => _Dark;
     }
 
     void OnLoaded(object sender, RoutedEventArgs e)
     {
+        NewSDKTitleBar = false;
+        ThemeChanged += () => (Resources["Color"] as SolidColorBrush ?? throw new NullReferenceException()).Color = Dark ? Colors.White : Colors.Black;
+#if WINDOWS10_0_17763_0_OR_GREATER
+        Dark = IsDarkBackground(UISettings.GetColorValue(UIColorType.Background));
+        if (IsWin11)
+        {
+            AppWindow = AppWindow.GetFromWindowId(WindowId);
+            var AppTitleBar = AppWindow.TitleBar;
+            AppTitleBar.ExtendsContentIntoTitleBar = true;
+
+            var leftmargin = TitleText.Margin;
+            leftmargin.Left += AppTitleBar.LeftInset;
+            TitleText.Margin = leftmargin;
+
+            var rightmargin = TitleBarDragable.Margin;
+            rightmargin.Right = AppTitleBar.RightInset;
+            TitleBarDragable.Margin = rightmargin;
+            void UpdateColor()
+            {
+                var TranColor = new WinUIColor { A = 0 };
+                if (Dark)
+                {
+                    TranColor.R = 0;
+                    TranColor.G = 0;
+                    TranColor.B = 0;
+                } else
+                {
+                    TranColor.R = 255;
+                    TranColor.G = 255;
+                    TranColor.B = 255;
+                }
+                AppTitleBar.ButtonBackgroundColor = TranColor;
+                AppTitleBar.ButtonInactiveBackgroundColor = TranColor;
+                byte color = (byte)(255 - TranColor.R);
+                TranColor.R = color;
+                TranColor.G = color;
+                TranColor.B = color;
+                TranColor.A = 255 / 10;
+                AppTitleBar.ButtonHoverBackgroundColor = TranColor;
+                TranColor.A = 255 / 5;
+                AppTitleBar.ButtonPressedBackgroundColor = TranColor;
+                TranColor.A = 255;
+                AppTitleBar.ButtonForegroundColor = TranColor;
+                AppTitleBar.ButtonHoverForegroundColor = TranColor;
+                AppTitleBar.ButtonInactiveForegroundColor = TranColor;
+                AppTitleBar.ButtonPressedForegroundColor = TranColor;
+            }
+            UpdateColor();
+            ThemeChanged += UpdateColor;
+            void UpdateDragRectangles()
+            {
+                var Title1Location = TitleText.TransformToVisual(this).Transform(new System.Windows.Point());
+                var Title2Location = TitleBarDragable.TransformToVisual(this).Transform(new System.Windows.Point());
+                AppTitleBar.SetDragRectangles(new Windows.Graphics.RectInt32[]
+                {
+                    new Windows.Graphics.RectInt32
+                    {
+                        X = (int)(Title1Location.X - leftmargin.Left),
+                        Y = 0,
+                        Width = (int)(TitleText.ActualWidth + leftmargin.Left + leftmargin.Right),
+                        Height = (int)TitleBar.ActualHeight
+                    },
+                    new Windows.Graphics.RectInt32
+                    {
+                        X = (int)Title2Location.X,
+                        Y = 0,
+                        Width = (int)TitleBarDragable.ActualWidth,
+                        Height = (int)TitleBar.ActualHeight
+                    }
+                });
+            }
+
+            SizeChanged += delegate
+            {
+                UpdateDragRectangles();
+            };
+            UpdateDragRectangles();
+            NewSDKTitleBar = true;
+            goto SetWindowChromeComplete;
+        }
+#endif
+        SetValue(WindowChrome.WindowChromeProperty, WindowChrome);
+        WindowChrome.SetIsHitTestVisibleInChrome(Back, true);
+        WindowChrome.SetIsHitTestVisibleInChrome(Forward, true);
+        WindowChrome.SetIsHitTestVisibleInChrome(Reload, true);
+        WindowChrome.SetIsHitTestVisibleInChrome(Setting, true);
+        goto SetWindowChromeComplete;
+    SetWindowChromeComplete:
         void RefreshFrame()
         {
             HwndSource mainWindowSrc = HwndSource.FromHwnd(Handle);
 
-            if (NotSupportedBuild && !Settings.Default.UseBackdropAnyway)
+#if WINDOWS10_0_17763_0_OR_GREATER
+            if (!NotSupportedBuild || Settings.Default.UseBackdropAnyway)
             {
-                mainWindowSrc.CompositionTarget.BackgroundColor = Dark ? System.Windows.Media.Color.FromRgb(50, 50, 50) :
-                       System.Windows.Media.Color.FromRgb(250, 250, 250);
-            }
-            else
-            {
-                mainWindowSrc.CompositionTarget.BackgroundColor = System.Windows.Media.Color.FromArgb(0, 0, 0, 0);
+                mainWindowSrc.CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
                 DwmApi.DwmExtendFrameIntoClientArea(Handle, new()
                 {
                     cxLeftWidth = -1,
@@ -64,33 +171,59 @@ public partial class MainWindow : Window
                     cyTopHeight = -1,
                     cyBottomHeight = -1,
                 });
+                goto End;
             }
+#endif
+            if (!IsWin7)
+            {
+                WindowChrome.GlassFrameThickness = new Thickness(0);
+                WindowChrome.UseAeroCaptionButtons = false;
+                mainWindowSrc.CompositionTarget.BackgroundColor = Dark ? Color.FromArgb(255, 52, 52, 52) :
+                       Color.FromArgb(255, 250, 250, 250);
+            }
+            
+            WindowChrome.CaptionHeight = 32;
+            goto End;
+        End:
+            ;
         }
+        
+
+        SizeChanged += (_, _) => RefreshFrame();
+        IsVisibleChanged += (_, _) => RefreshFrame();
+#if WINDOWS10_0_17763_0_OR_GREATER
+
         void RefreshDarkMode(bool dark) => CustomPInvoke.DwmApi.SetWindowAttribute(
             Handle,
             CustomPInvoke.DwmApi.DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE,
-            dark ? 1 : 0 // Always dark as of now, or you can change to: ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Dark ? 1 : 0
+            dark ? 1 : 0
         );
-        static bool IsDarkBackground(Windows.UI.Color color)
+        ThemeChanged += () => RefreshDarkMode(dark: Dark);
+        static bool IsDarkBackground(WinUIColor color)
         {
             return color.R + color.G + color.B < (255 * 3 - color.R - color.G - color.B);
         }
-        if (UISettings != null)
-#pragma warning disable CA1416 // Validate platform compatibility
-            RefreshDarkMode(dark: IsDarkBackground(UISettings.GetColorValue(UIColorType.Background)));
-#pragma warning restore CA1416 // Validate platform compatibility
-        SizeChanged += (_, _) => RefreshFrame();
-        IsVisibleChanged += (_, _) => RefreshFrame();
+        
+        //RefreshDarkMode(dark: Dark);
+        SetBackdrop((CustomPInvoke.BackdropType)Enum.Parse(typeof(CustomPInvoke.BackdropType), Settings.Default.BackdropType, ignoreCase: true));
+#else
+
+        if (!IsWin7)
+        {
+            TitleBarCaptionButtons.Visibility = Visibility.Visible;
+            foreach (var child in TitleBarCaptionButtons.Children)
+                WindowChrome.SetIsHitTestVisibleInChrome(child as IInputElement, true);
+        }
+        ThemeChanged += RefreshFrame;
+#endif
+        // Just to make everything updated again
+        var d = Dark;
+        Dark = d;
 
         Width += 1;
-        SetBackdrop((CustomPInvoke.BackdropType)Enum.Parse(typeof(CustomPInvoke.BackdropType), Settings.Default.BackdropType, ignoreCase: true));
         WebView.CoreWebView2InitializationCompleted += (_, _) =>
         {
             var CoreWebView2 = WebView.CoreWebView2;
-            CoreWebView2.PermissionRequested += (_, e) =>
-            {
-                MessageBox.Show("PermissionRequested", e.PermissionKind.ToString());
-            };
             CoreWebView2.NewWindowRequested += (_, e) =>
             {
                 if (Control.ModifierKeys.HasFlag(Keys.Shift)) return;
@@ -102,32 +235,6 @@ public partial class MainWindow : Window
                 e.Handled = true;
             };
 
-            //CoreWebView2.ContextMenuRequested += (_, e) =>
-            //{
-            //    if (e.ContextMenuTarget.HasLinkUri)
-            //    {
-            //        Stream Icon = null;
-            //        foreach (var menu in e.MenuItems)
-            //        {
-            //            if (menu.Label.ToLower().Replace("&", "").Contains("new window")) menu.CustomItemSelected += (_, e) =>
-            //            {
-            //                Icon = menu.Icon;
-            //            };
-            //        }
-            //        var newItem = CoreWebView2.Environment.CreateContextMenuItem("Open In Default Browser (Shift + Click)", Icon, CoreWebView2ContextMenuItemKind.Command);
-            //        newItem.CustomItemSelected += (_, e2) =>
-            //        {
-            //            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-            //            {
-            //                FileName = e.ContextMenuTarget.LinkUri,
-            //                UseShellExecute = true
-            //            });
-
-            //        };
-            //        e.MenuItems.Insert(0, CoreWebView2.Environment.CreateContextMenuItem("", null, CoreWebView2ContextMenuItemKind.Separator));
-            //        e.MenuItems.Insert(0, newItem);
-            //    }
-            //};
             var handle = WebView.Handle;
             _ = User32.SetWindowLong(handle, User32.WindowLongIndexFlags.GWL_EXSTYLE,
                 (User32.SetWindowLongFlags)User32.GetWindowLong(handle, User32.WindowLongIndexFlags.GWL_EXSTYLE)
@@ -169,13 +276,11 @@ public partial class MainWindow : Window
                 {
                     if (Settings.Default.ReplaceDiscordBackground)
                     {
-                        Windows.UI.Color PrimaryColor = default;
-                        if (SupportAccent)
-                        {
-#pragma warning disable CA1416 // Validate platform compatibility
-                            PrimaryColor = UISettings?.GetColorValue(UIColorType.AccentLight3) ?? default;
-#pragma warning restore CA1416 // Validate platform compatibility
-                        }
+#if WINDOWS10_0_17763_0_OR_GREATER
+                        WinUIColor PrimaryColor = UISettings.GetColorValue(UIColorType.AccentLight3);
+#else
+                        SysDrawColor PrimaryColor = SysDrawColor.FromArgb(255, 88, 101, 242);
+#endif
                         CoreWebView2.ExecuteScriptAsync($@"
 (function() {{
 let baseStyles = [
@@ -197,6 +302,18 @@ console.log('%cDO NOT Paste ANYTHING that you do not understand how it works.', 
             }
             WebView.KeyDown += DevToolsCheck;
 
+            CoreWebView2.WebMessageReceived += (_, e) =>
+            {
+                switch (e.TryGetWebMessageAsString())
+                {
+                    case "dark":
+                        Dark = true;
+                        break;
+                    case "light":
+                        Dark = false;
+                        break;
+                }
+            };
 
             RefreshFrame();
         };
@@ -211,19 +328,24 @@ console.log('%cDO NOT Paste ANYTHING that you do not understand how it works.', 
                 var Light = (await WebView.CoreWebView2.ExecuteScriptAsync("document.getElementsByTagName('html')[0].classList.contains('theme-light')")) == "true";
                 if (Dark is false && Light is false)
                     Dark = this.Dark; // Don't change
-                Windows.UI.Color PrimaryColor = default, DisabledColor = default, HoverColor = default, Accent = default;
-                if (SupportAccent && UISettings != null)
-                {
-#pragma warning disable CA1416 // Validate platform compatibility
-                    PrimaryColor = UISettings.GetColorValue(UIColorType.AccentLight3);//CustomPInvoke.GetAccentColor(Dark ? AccentColorTypes.ImmersiveSaturatedHighlight : AccentColorTypes.ImmersiveSaturatedSelectionBackground);
-                    DisabledColor = UISettings.GetColorValue(UIColorType.AccentLight2);//CustomPInvoke.GetAccentColor(AccentColorTypes.ImmersiveSaturatedCommandRowDisabled);
-                    DisabledColor.A /= 2;
-                    HoverColor = UISettings.GetColorValue(UIColorType.AccentLight2);
-                    Accent = UISettings.GetColorValue(UIColorType.Accent);
-#pragma warning restore CA1416 // Validate platform compatibility
-                }
+#if WINDOWS10_0_17763_0_OR_GREATER
+                WinUIColor
+                PrimaryColor = UISettings.GetColorValue(UIColorType.AccentLight3),
+                DisabledColor = UISettings.GetColorValue(UIColorType.AccentLight2),
+                HoverColor = UISettings.GetColorValue(UIColorType.AccentLight2),
+                Accent = UISettings.GetColorValue(UIColorType.Accent);
+                DisabledColor.A /= 2;
+#else
+                SysDrawColor
+                        PrimaryColor = SysDrawColor.FromArgb(255, 88, 101, 242),
+                        DisabledColor = SysDrawColor.FromArgb(255 / 2, 50, 57, 140),
+                        HoverColor = SysDrawColor.FromArgb(255, 69, 79, 191),
+                        Accent = SysDrawColor.FromArgb(255, 88, 101, 242);
+#endif
 
-                if (IsExcessiveAccentColorEnabled) (Resources["Color"] as SolidColorBrush ?? throw new NullReferenceException()).Color = System.Windows.Media.Color.FromArgb(PrimaryColor.A, PrimaryColor.R, PrimaryColor.G, PrimaryColor.B);
+
+                (Resources["Color"] as SolidColorBrush ?? throw new NullReferenceException())
+                        .Color = Color.FromArgb(PrimaryColor.A, PrimaryColor.R, PrimaryColor.G, PrimaryColor.B);
 
                 /*
                 static double GetHue(int red, int green, int blue)
@@ -248,70 +370,40 @@ console.log('%cDO NOT Paste ANYTHING that you do not understand how it works.', 
                     return hue;
                 }
                 */
-                RefreshDarkMode(dark: Dark);
                 this.Dark = Dark;
-                var LightColorCSS = Dark && Settings.Default.ModeAwareCSS;
-                var invc = LightColorCSS ? 250 : 0;
-                var regcgray = LightColorCSS ? 50 : 200;
-                var floating = Dark ? 0 : 255;
                 var ErrorAccentColor = CustomPInvoke.UxTheme.GetAccentColor(AccentColorTypes.ImmersiveSaturatedInlineErrorText);
-                await WebView.CoreWebView2.ExecuteScriptAsync(($@"
+                await WebView.CoreWebView2.ExecuteScriptAsync(DefinedJavascript);
+
+                await WebView.CoreWebView2.ExecuteScriptAsync($@"
 (function () {{
     let s = document.createElement('style');
     s.innerHTML = `
-* {{ /* System Color */" +
-(SupportAccent ?
-@$"
-    --sys-accent-prop: {Accent.R}, {Accent.G}, {Accent.B};
-    --sys-accent-color: rgba({Accent.R}, {Accent.G}, {Accent.B}, {Accent.A});
-    --sys-accent-light-3-color: rgba({PrimaryColor.R}, {PrimaryColor.G}, {PrimaryColor.B}, {PrimaryColor.A});
-    --sys-accent-disabled-color: rgba({DisabledColor.R}, {DisabledColor.G}, {DisabledColor.B}, {DisabledColor.A});
-    --sys-accent-disabled-color-half: rgba({DisabledColor.R}, {DisabledColor.G}, {DisabledColor.B}, {DisabledColor.A / 2});
-    --sys-error-accent-color: rgba({ErrorAccentColor.R}, {ErrorAccentColor.G}, {ErrorAccentColor.B}, {ErrorAccentColor.A});
-    --sys-hover-accent-color: rgba({HoverColor.R}, {HoverColor.G}, {HoverColor.B}, {HoverColor.A});
-" : "") + $@"
-    --sys-light-color-bg: {(LightColorCSS ? 1 : 0)};
-    --sys-layering-strength: {invc};
-    --sys-floating-strength: {floating};
-    --sys-normal-strength: {regcgray};
-    --sys-border-radius: {Radius};
-}}
-* {{
-{(
-    IsExcessiveAccentColorEnabled ? @"
-    --interactive-active: var(--sys-accent-light-3-color);
-    --interactive-normal: var(--sys-accent-light-3-color);
-    --interactive-hover: var(--sys-hover-accent-color);
-    --interactive-disabled: var(--sys-accent-disabled-color-half);
-    --text-muted: var(--sys-accent-disabled-color-half);
-    --channels-default: var(--sys-accent-disabled-color);
-" : ""
-)}
-    
-}}
-" + DefinedCSS + @"
-`.trim();
+:root {{ /* System Color */
+    --sys-accent-prop: {Accent.R}, {Accent.G}, {Accent.B} !important;
+    --sys-accent-alpha: {Accent.A} !important;
+    --sys-text-color-on-accent: {((Accent.R * 0.299 + Accent.G * 0.587 + Accent.B * 0.114) > 186 ? "black" : "white")} !important;
+    --sys-accent-light-3-prop: {PrimaryColor.R}, {PrimaryColor.G}, {PrimaryColor.B} !important;
+    --sys-accent-light-3-alpha: {PrimaryColor.A} !important;
+    --sys-text-color-on-accent-light-3: {((PrimaryColor.R * 0.299 + PrimaryColor.G * 0.587 + PrimaryColor.B * 0.114) > 186 ? "black" : "white")} !important;
+    --sys-accent-disabled-prop: {DisabledColor.R}, {DisabledColor.G}, {DisabledColor.B} !important;
+    --sys-accent-disabled-alpha: {DisabledColor.A} !important;
+    --sys-error-accent-prop: {ErrorAccentColor.R}, {ErrorAccentColor.G}, {ErrorAccentColor.B} !important;
+    --sys-error-accent-alpha: {ErrorAccentColor.A} !important;
+    --sys-hover-accent-prop: {HoverColor.R}, {HoverColor.G}, {HoverColor.B} !important;
+    --sys-hover-accent-alpha: {HoverColor.A} !important;
+}}`.trim();
     document.head.appendChild(s);
-})()
-").Trim());
-//                await WebView.CoreWebView2.ExecuteScriptAsync($@"
-//(function () {{
-    
-//}})()
-//".Trim());
+}})()".Trim());
+                await WebView.CoreWebView2.ExecuteScriptAsync($@"
+(function () {{
+    let s = document.createElement('style');
+    s.innerHTML = `{DefinedCSS}`;
+    document.head.appendChild(s);
+}})()".Trim());
                 RefreshFrame();
             }
         };
 
-        WebView.WebMessageReceived += (_, e) =>
-        {
-            string s = e.TryGetWebMessageAsString();
-            switch (s)
-            {
-                default:
-                    break;
-            }
-        };
         Closing += (_, e) =>
         {
             if (!ForceClose && Settings.Default.UseSystemTray)
@@ -339,29 +431,52 @@ console.log('%cDO NOT Paste ANYTHING that you do not understand how it works.', 
     public static SolidColorBrush GetColorFromHex(string hexaColor)
     {
         return new SolidColorBrush(
-            System.Windows.Media.Color.FromArgb(
+            Color.FromArgb(
             Convert.ToByte(hexaColor[1..2], 16),
             Convert.ToByte(hexaColor[3..2], 16),
             Convert.ToByte(hexaColor[5..2], 16),
             Convert.ToByte(hexaColor[7..2], 16)
         ));
     }
-    public static System.Windows.Media.Color GetColorFromUInt(uint value)
-        => System.Windows.Media.Color.FromArgb(
+    public static Color GetColorFromUInt(uint value)
+        => Color.FromArgb(
             (byte)(value >> 24),
             (byte)(value >> 16),
             (byte)(value >> 8),
             (byte)(value)
         );
+
+    private void Minimize(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void Maximize(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Maximized;
+    }
+
+    private void Close(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
 }
 public partial class MainWindow : Window
 {
+    readonly WV2::Microsoft.Web.WebView2.Wpf.WebView2 WebView;
     public bool ForceClose { get; set; } = false;
     public MainWindow()
     {
         AllowsTransparency = false;
         WindowInteropHelper = new WindowInteropHelper(this);
         InitializeComponent();
+        if (!IsWin11) Resources["IconFont"] = new System.Windows.Media.FontFamily("Segoe MDL2 Assets");
+        WebView2AddHere.Children.Add(WebView = new WV2::Microsoft.Web.WebView2.Wpf.WebView2
+        {
+            Source = new Uri("https://discord.com/channels/@me"),
+            DefaultBackgroundColor = System.Drawing.Color.Transparent
+        });
+        TitleBar.Height = 32;
         Loaded += OnLoaded;
         SettingsDialog.OnClose += () =>
         {
@@ -372,7 +487,9 @@ public partial class MainWindow : Window
         };
         SettingsDialog.OnSettingsChanged += () =>
         {
+#if WINDOWS10_0_17763_0_OR_GREATER
             SetBackdrop((CustomPInvoke.BackdropType)Enum.Parse(typeof(CustomPInvoke.BackdropType), Settings.Default.BackdropType, ignoreCase: true));
+#endif
             var w = WebView.CoreWebView2;
             if (w != null)
             {
@@ -390,17 +507,13 @@ public partial class MainWindow : Window
         };
         SizeChanged += (_, _) =>
         {
-            var a = WindowState == WindowState.Maximized ? 7.5 : 0;
-            TitleBar.Margin = new Thickness(a, a, 0, 0);
-            WebView.Margin = new Thickness(7.5, 0, 7.5, 7.5);
+            if (!NewSDKTitleBar)
+            {
+                var a = WindowState == WindowState.Maximized ? 7.5 : 0;
+                TitleBar.Margin = new Thickness(a, a, 0, 0);
+                WebView.Margin = new Thickness(7.5, 0, 7.5, 7.5);
+            }
         };
-        SetValue(WindowChrome.WindowChromeProperty, WindowChrome);
-        WindowChrome.SetIsHitTestVisibleInChrome(Back, true);
-        WindowChrome.SetIsHitTestVisibleInChrome(Forward, true);
-        WindowChrome.SetIsHitTestVisibleInChrome(Reload, true);
-        WindowChrome.SetIsHitTestVisibleInChrome(Setting, true);
-        using var g = Graphics.FromImage(new Bitmap(1, 1));
-        var dpix = g.DpiX;
     }
     WindowChrome WindowChrome { get; } = new WindowChrome
     {
@@ -416,7 +529,7 @@ public partial class MainWindow : Window
         }
         finally { Gdi32.DeleteObject(handle); }
     }
-
+#if WINDOWS10_0_17763_0_OR_GREATER
     void SetBackdrop(CustomPInvoke.BackdropType BackdropType) => SetBackdrop((int)BackdropType);
     void SetBackdrop(int BackdropType)
     {
@@ -425,8 +538,19 @@ public partial class MainWindow : Window
             CustomPInvoke.DwmApi.DWMWINDOWATTRIBUTE.DWMWA_SYSTEMBACKDROP_TYPE,
             BackdropType);
     }
-
+#endif
     public WindowInteropHelper WindowInteropHelper { get; }
     public IntPtr Handle => WindowInteropHelper.Handle;
-
+#if WINDOWS10_0_17763_0_OR_GREATER
+    public WindowId WindowId => Win32Interop.GetWindowIdFromWindow(Handle);
+    public AppWindow? AppWindow { get; private set; }
+#endif
+}
+static class Extension
+{
+    public static T Edit<T>(this T In, Action<T> Act)
+    {
+        Act?.Invoke(In);
+        return In;
+    }
 }
