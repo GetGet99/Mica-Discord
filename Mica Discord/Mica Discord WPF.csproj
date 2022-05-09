@@ -41,15 +41,13 @@
 
 	<ItemGroup>
 		<None Remove="MicaDiscordScript.js" />
-		<None Remove="The CSS - Fluent.css" />
+		<None Remove="The CSS.css" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Content Include="Mica Discord.ico" />
-		<Content Include="The CSS - Fluent.css">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
 		<Content Include="MicaDiscordScript.js" />
+		<Content Include="The CSS.css" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -85,6 +83,12 @@
 		<Compile Update="ModernContextMenuForm.cs">
 			<SubType>Form</SubType>
 		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="The CSS - Fluent.css">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 	<ItemGroup>
