@@ -36,6 +36,9 @@ public partial class MainWindow : Window
 {
 #if WINDOWS10_0_17763_0_OR_GREATER
     static UISettings UISettings { get; } = new();
+    public static bool IsNewTitleBarSupported => AppWindowTitleBar.IsCustomizationSupported();
+#else
+    public static bool IsNewTitleBarSupported => false;
 #endif
     public static string DefinedCSS
 #if DEBUG
@@ -52,8 +55,8 @@ public partial class MainWindow : Window
     public static bool NotSupportedBuild => Environment.OSVersion.Version.Build < 22523;
     public static bool IsWin11 => Environment.OSVersion.Version.Build > 22000;
     public static bool IsWin7 => Environment.OSVersion.Version.Major < 8 && Environment.OSVersion.Version.Major >= 7;
+
     bool DiscordEffectApplied = false;
-    bool NewSDKTitleBar = false;
     bool _Dark = true;
     Action? ThemeChanged = null;
     bool Dark
@@ -68,11 +71,10 @@ public partial class MainWindow : Window
 
     void OnLoaded(object sender, RoutedEventArgs e)
     {
-        NewSDKTitleBar = false;
         ThemeChanged += () => (Resources["Color"] as SolidColorBrush ?? throw new NullReferenceException()).Color = Dark ? Colors.White : Colors.Black;
 #if WINDOWS10_0_17763_0_OR_GREATER
         Dark = IsDarkBackground(UISettings.GetColorValue(UIColorType.Background));
-        if (IsWin11)
+        if (IsNewTitleBarSupported)
         {
             AppWindow = AppWindow.GetFromWindowId(WindowId);
             var AppTitleBar = AppWindow.TitleBar;
@@ -145,7 +147,6 @@ public partial class MainWindow : Window
                 UpdateDragRectangles();
             };
             UpdateDragRectangles();
-            NewSDKTitleBar = true;
             goto SetWindowChromeComplete;
         }
 #endif
@@ -174,20 +175,20 @@ public partial class MainWindow : Window
                 goto End;
             }
 #endif
-            if (!IsWin7)
+            if (!IsNewTitleBarSupported)
             {
                 WindowChrome.GlassFrameThickness = new Thickness(0);
                 WindowChrome.UseAeroCaptionButtons = false;
                 mainWindowSrc.CompositionTarget.BackgroundColor = Dark ? Color.FromArgb(255, 52, 52, 52) :
                        Color.FromArgb(255, 250, 250, 250);
             }
-            
+
             WindowChrome.CaptionHeight = 32;
             goto End;
         End:
             ;
         }
-        
+
 
         SizeChanged += (_, _) => RefreshFrame();
         IsVisibleChanged += (_, _) => RefreshFrame();
@@ -207,15 +208,14 @@ public partial class MainWindow : Window
         //RefreshDarkMode(dark: Dark);
         SetBackdrop((CustomPInvoke.BackdropType)Enum.Parse(typeof(CustomPInvoke.BackdropType), Settings.Default.BackdropType, ignoreCase: true));
 #else
-
-        if (!IsWin7)
+        ThemeChanged += RefreshFrame;
+#endif
+        if (!IsNewTitleBarSupported)
         {
             TitleBarCaptionButtons.Visibility = Visibility.Visible;
             foreach (var child in TitleBarCaptionButtons.Children)
                 WindowChrome.SetIsHitTestVisibleInChrome(child as IInputElement, true);
         }
-        ThemeChanged += RefreshFrame;
-#endif
         // Just to make everything updated again
         var d = Dark;
         Dark = d;
@@ -453,7 +453,7 @@ console.log('%cDO NOT Paste ANYTHING that you do not understand how it works.', 
 
     private void Maximize(object sender, RoutedEventArgs e)
     {
-        WindowState = WindowState.Maximized;
+        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
     }
 
     private void Close(object sender, RoutedEventArgs e)
@@ -505,14 +505,13 @@ public partial class MainWindow : Window
         {
             if (WebView.CanGoForward) WebView.GoForward();
         };
-        SizeChanged += (_, _) =>
+        if (!IsNewTitleBarSupported)
+            SizeChanged += (_, _) =>
         {
-            if (!NewSDKTitleBar)
-            {
-                var a = WindowState == WindowState.Maximized ? 7.5 : 0;
-                TitleBar.Margin = new Thickness(a, a, 0, 0);
-                WebView.Margin = new Thickness(7.5, 0, 7.5, 7.5);
-            }
+            var a = WindowState == WindowState.Maximized ? 7.5 : 0;
+            TitleBar.Margin = new Thickness(a, a, 0, 0);
+            TitleBarCaptionButtons.Margin = new Thickness(0, 0, 7.5, 0);
+            WebView.Margin = new Thickness(7.5, 0, 7.5, 7.5);
         };
     }
     WindowChrome WindowChrome { get; } = new WindowChrome
