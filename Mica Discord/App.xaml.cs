@@ -117,22 +117,20 @@ public partial class App : WPFApplication
     [STAThread]
     public static void Main()
     {
-        //using Mutex mutex = new(false, "Mica Discord");
-        //if (!mutex.WaitOne(0, false))
-        //{
-        //    System.Windows.Forms.MessageBox.Show("Instance already running");
-        //    return;
-        //}
-#if WINDOWS10_0_17763_0_OR_GREATER
-        Bootstrap.Initialize(0x00010000);
+        using Mutex mutex = new(false, "Mica Discord"
+#if DEBUG
+            + " (DEBUG)"
 #endif
+            );
+        if (!mutex.WaitOne(0, false))
+        {
+            System.Windows.Forms.MessageBox.Show("Instance already running");
+            return;
+        }
         var app = new App();
         app.InitializeComponent();
         app.Run();
 
-#if WINDOWS10_0_17763_0_OR_GREATER
-        Bootstrap.Shutdown();
-#endif
         //System.Windows.Forms.Application.Run(new WinForms());
 
     }

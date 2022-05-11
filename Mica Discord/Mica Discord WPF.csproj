@@ -15,7 +15,9 @@
 		<SupportedOSPlatformVersions>10.0.17763.0;7.0</SupportedOSPlatformVersions>
 		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
 	</PropertyGroup>
-
+	<PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.17763.0' ">
+		<WindowsPackageType Condition="">None</WindowsPackageType>
+	</PropertyGroup>
 	<ItemGroup>
 		<Compile Remove="Experimental\**" />
 		<EmbeddedResource Remove="Experimental\**" />
@@ -59,7 +61,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1243-prerelease">
-		  <Aliases>WV2</Aliases>
+			<Aliases>WV2</Aliases>
 		</PackageReference>
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.3" />
 		<PackageReference Include="PInvoke.DwmApi" Version="0.7.104" />
@@ -86,9 +88,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="The CSS - Fluent.css">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
+		<None Update="The CSS - Fluent.css">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 	<ItemGroup>
