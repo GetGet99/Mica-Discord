@@ -6,7 +6,7 @@ An application with Mica background using transparent-background WebView2 to hos
 1. Download Evergreen WebView2 and .NET 6 Desktop Runtime if you haven't already
 - Evergreen https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section
 - .NET 6 Desktop Runtime https://dotnet.microsoft.com/en-us/download/dotnet/6.0
-2. Go to the release page, download it, and double click Mica Discord.exe (OR you can download the source and compile it yourself since the dev is ~lazy~ I mean busy.)
+2. Go to the release page, download it, and double click setup.exe (OR you can download the source and compile it yourself since the dev is ~lazy~ I mean busy.)
 
 # Disclaimer
 If you plan to use this with replace background enabled, I'm not sure if it violates Discord TOS or not. I'm not a lawyer. But here's how it works
