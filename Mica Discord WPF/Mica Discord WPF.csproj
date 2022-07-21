@@ -16,7 +16,7 @@
 		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.17763.0' ">
-		<WindowsPackageType Condition="">None</WindowsPackageType>
+		<WindowsPackageType>None</WindowsPackageType>
 	</PropertyGroup>
 	<ItemGroup>
 		<Compile Remove="Experimental\**" />
@@ -42,25 +42,28 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Remove="JupyterLite\pyodide.js" />
 		<None Remove="MicaDiscordScript.js" />
 		<None Remove="The CSS.css" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="Mica Discord.ico" />
-		<Content Include="MicaDiscordScript.js" />
-		<Content Include="The CSS.css" />
+		<Content Include="Mica Discord.ico">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="MicaDiscordScript.js">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="The CSS.css">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="JupyterLite/**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="C:\Users\Get\source\repos\Mica Discord\Mica Discord\Resources\Mica Discord.png">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1243-prerelease">
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1248-prerelease">
 			<Aliases>WV2</Aliases>
 		</PackageReference>
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.3" />
@@ -88,6 +91,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Update="Resources\Mica Discord.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Resources\Mica Discord.ico">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</None>
 		<None Update="The CSS - Fluent.css">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</None>

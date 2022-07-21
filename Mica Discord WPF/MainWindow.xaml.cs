@@ -34,9 +34,11 @@ namespace MicaDiscord;
 
 public partial class MainWindow : Window
 {
+    public static int WindowsMajorNumber = Environment.OSVersion.Version.Major;
+    public static int WindowsBuildNumber = Environment.OSVersion.Version.Build;
 #if WINDOWS10_0_17763_0_OR_GREATER
     static UISettings UISettings { get; } = new();
-    public static bool IsNewTitleBarSupported => AppWindowTitleBar.IsCustomizationSupported();
+    public static bool IsNewTitleBarSupported => IsWin11; //AppWindowTitleBar.IsCustomizationSupported();
 #else
     public static bool IsNewTitleBarSupported => false;
 #endif
@@ -52,9 +54,9 @@ public partial class MainWindow : Window
 #else
         = File.ReadAllText("./MicaDiscordScript.js"); // Read only once
 #endif
-    public static bool NotSupportedBuild => Environment.OSVersion.Version.Build < 22523;
-    public static bool IsWin11 => Environment.OSVersion.Version.Build > 22000;
-    public static bool IsWin7 => Environment.OSVersion.Version.Major < 8 && Environment.OSVersion.Version.Major >= 7;
+    public static bool NotSupportedBuild => !IsWin11;
+    public static bool IsWin11 => WindowsBuildNumber is >=22000;
+    public static bool IsWin7 => WindowsMajorNumber is >= 7 and < 8;
 
     bool DiscordEffectApplied = false;
     bool _Dark = true;
@@ -470,12 +472,20 @@ public partial class MainWindow : Window
         AllowsTransparency = false;
         WindowInteropHelper = new WindowInteropHelper(this);
         InitializeComponent();
+        
         if (!IsWin11) Resources["IconFont"] = new System.Windows.Media.FontFamily("Segoe MDL2 Assets");
         WebView2AddHere.Children.Add(WebView = new WV2::Microsoft.Web.WebView2.Wpf.WebView2
         {
-            Source = new Uri("https://discord.com/channels/@me"),
             DefaultBackgroundColor = System.Drawing.Color.Transparent
         });
+        async void InitializeAsync()
+        {
+            if (WebView == null) return;
+            await WebView.EnsureCoreWebView2Async();
+            WebView.Source = new Uri(@"https://discord.com/channels/@me");
+
+        }
+        InitializeAsync();
         TitleBar.Height = 32;
         Loaded += OnLoaded;
         SettingsDialog.OnClose += () =>

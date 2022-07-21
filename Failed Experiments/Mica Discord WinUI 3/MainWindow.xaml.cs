@@ -32,9 +32,13 @@ namespace Mica_Discord_WinUI_3
             var m_wsdqHelper = new WindowsSystemDispatcherQueueHelper();
             m_wsdqHelper.EnsureWindowsSystemDispatcherQueueController();
             var m_configurationSource = new SystemBackdropConfiguration();
-            MicaController micaController = new();
-            micaController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
-            micaController.SetSystemBackdropConfiguration(m_configurationSource);
+            DesktopAcrylicController Backdrop = new();
+            Backdrop.TintOpacity = 0;
+            Backdrop.LuminosityOpacity = 0;
+
+            Backdrop.TintColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+            Backdrop.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
+            Backdrop.SetSystemBackdropConfiguration(m_configurationSource);
         }
 
     }

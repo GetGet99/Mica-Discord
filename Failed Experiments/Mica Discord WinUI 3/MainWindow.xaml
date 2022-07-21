@@ -14,6 +14,5 @@
         </Grid.RowDefinitions>
         <Button Grid.Row="0">Hi</Button>
         <Button Grid.Row="1">Again</Button>
-        <WebView2 Grid.Row="1" Source="about:blank" DefaultBackgroundColor="Transparent"/>
     </Grid>
 </Window>

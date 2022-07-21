@@ -2,11 +2,19 @@
 .vscode
 Mica Discord WPF/bin
 Mica Discord WPF/obj
-Mica Discord/bin
-Mica Discord/obj
-Mica Discord UWP/bin
-Mica Discord UWP/obj
-Mica Discord WinUI 3/bin
-Mica Discord WinUI 3/obj
-CSharpUI/bin
-CSharpUI/obj
+Failed Experiments/CSharpUI/bin
+Failed Experiments/CSharpUI/obj
+Failed Experiments/Mica Discord Old/bin
+Failed Experiments/Mica Discord Old/obj
+Failed Experiments/Mica Discord UWP/bin
+Failed Experiments/Mica Discord UWP/obj
+Failed Experiments/Mica Discord WinUI 3/bin
+Failed Experiments/Mica Discord WinUI 3/obj
+Failed Experiments/SettingsBuilder/bin
+Failed Experiments/SettingsBuilder/obj
+Future/Mica Browser/bin
+Future/Mica Browser/obj
+Future/Mica Window/bin
+Future/Mica Window/obj
+Future/MicaBroswerTester/bin
+Future/MicaBroswerTester/obj
