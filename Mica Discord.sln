@@ -5,12 +5,6 @@ VisualStudioVersion = 17.1.31911.260
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mica Discord WPF", "Mica Discord WPF\Mica Discord WPF.csproj", "{335147AD-1414-4847-99A8-C11A142CED09}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mica Window", "Mica Window\Mica Window.csproj", "{2C2200E9-1251-499D-A69A-66D7DB1F96B8}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MicaBroswerTester", "MicaBroswerTester\MicaBroswerTester.csproj", "{753FAE0B-9C6B-4AB3-A079-37AB4965D9B7}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mica Browser", "Mica Browser\Mica Browser.csproj", "{E3617B44-9CDC-4450-8E5C-994B330987FF}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
