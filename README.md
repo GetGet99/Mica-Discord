@@ -2,6 +2,9 @@
 
 An application with Mica background using transparent-background WebView2 to host webpage, and go to discord and inject some basic CSS.
 
+# Requirements
+Windows 11 Build 22523+ (Other Windows version are not officially tested)
+
 # How to use?
 1. Download Evergreen WebView2, .NET 6 Desktop Runtime, and Windows App SDK 1.0.3 if you haven't already
 - Evergreen https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section
