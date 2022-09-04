@@ -29,14 +29,16 @@ using SysDrawColor = System.Drawing.Color;
 using Color = System.Windows.Media.Color;
 using Button = System.Windows.Controls.Button;
 using Control = System.Windows.Forms.Control;
-
 namespace MicaDiscord;
-
+#if WINDOWS10_0_17763_0_OR_GREATER
+using AppSetting = MicaDiscord.Setting;
+#endif
 public partial class MainWindow : Window
 {
     public static int WindowsMajorNumber = Environment.OSVersion.Version.Major;
     public static int WindowsBuildNumber = Environment.OSVersion.Version.Build;
 #if WINDOWS10_0_17763_0_OR_GREATER
+    static string StartupPath = "."; // Path.GetDirectoryName(typeof(MainWindow).Assembly.Location) ?? throw new NullReferenceException();
     static UISettings UISettings { get; } = new();
     public static bool IsNewTitleBarSupported => IsWin11; //AppWindowTitleBar.IsCustomizationSupported();
 #else
@@ -46,13 +48,13 @@ public partial class MainWindow : Window
 #if DEBUG
         => File.Exists("../../../The CSS.css") ? File.ReadAllText("../../../The CSS.css") : File.ReadAllText("The CSS.css");// Read File Every time
 #else
-        = File.ReadAllText("./The CSS.css"); // Read only once
+        = File.ReadAllText($"{StartupPath}/The CSS.css"); // Read only once
 #endif
     public static string DefinedJavascript
 #if DEBUG
         => File.Exists("../../../MicaDiscordScript.js") ? File.ReadAllText("../../../MicaDiscordScript.js") : File.ReadAllText("MicaDiscordScript.js");// Read File Every time
 #else
-        = File.ReadAllText("./MicaDiscordScript.js"); // Read only once
+        = File.ReadAllText($"{StartupPath}/MicaDiscordScript.js"); // Read only once
 #endif
     public static bool NotSupportedBuild => !IsWin11;
     public static bool IsWin11 => WindowsBuildNumber is >=22000;
@@ -164,7 +166,7 @@ public partial class MainWindow : Window
             HwndSource mainWindowSrc = HwndSource.FromHwnd(Handle);
 
 #if WINDOWS10_0_17763_0_OR_GREATER
-            if (!NotSupportedBuild || Settings.Default.UseBackdropAnyway)
+            if (!NotSupportedBuild || AppSetting.UseBackdropAnyway)
             {
                 mainWindowSrc.CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
                 DwmApi.DwmExtendFrameIntoClientArea(Handle, new()
@@ -208,7 +210,7 @@ public partial class MainWindow : Window
         }
         
         //RefreshDarkMode(dark: Dark);
-        SetBackdrop((CustomPInvoke.BackdropType)Enum.Parse(typeof(CustomPInvoke.BackdropType), Settings.Default.BackdropType, ignoreCase: true));
+        SetBackdrop((CustomPInvoke.BackdropType)Enum.Parse(typeof(CustomPInvoke.BackdropType), AppSetting.BackdropType, ignoreCase: true));
 #else
         ThemeChanged += RefreshFrame;
 #endif
@@ -261,7 +263,7 @@ public partial class MainWindow : Window
                 RefreshFrame();
             };
 
-            CoreWebView2.Settings.AreDevToolsEnabled = Settings.Default.EnableDevTools;
+            CoreWebView2.Settings.AreDevToolsEnabled = AppSetting.EnableDevTools;
             void DevToolsCheck(object _, System.Windows.Input.KeyEventArgs e)
             {
                 if (e.Key == Key.I && Control.ModifierKeys == (Keys.Control | Keys.Shift))
@@ -274,9 +276,9 @@ public partial class MainWindow : Window
                 e.Handled = false;
                 return;
             OK:
-                if (Settings.Default.EnableDevTools)
+                if (AppSetting.EnableDevTools)
                 {
-                    if (Settings.Default.ReplaceDiscordBackground)
+                    if (AppSetting.ReplaceDiscordBackground)
                     {
 #if WINDOWS10_0_17763_0_OR_GREATER
                         WinUIColor PrimaryColor = UISettings.GetColorValue(UIColorType.AccentLight3);
@@ -323,7 +325,7 @@ console.log('%cDO NOT Paste ANYTHING that you do not understand how it works.', 
         {
 
             if (!WebView.Source.OriginalString.Contains("discord.com")) return;
-            DiscordEffectApplied = Settings.Default.ReplaceDiscordBackground;
+            DiscordEffectApplied = AppSetting.ReplaceDiscordBackground;
             if (DiscordEffectApplied)
             {
                 var Dark = (await WebView.CoreWebView2.ExecuteScriptAsync("document.getElementsByTagName('html')[0].classList.contains('theme-dark')")) == "true";
@@ -408,7 +410,7 @@ console.log('%cDO NOT Paste ANYTHING that you do not understand how it works.', 
 
         Closing += (_, e) =>
         {
-            if (!ForceClose && Settings.Default.UseSystemTray)
+            if (!ForceClose && AppSetting.UseSystemTray)
             {
                 e.Cancel = true;
                 Hide();
@@ -498,12 +500,12 @@ public partial class MainWindow : Window
         SettingsDialog.OnSettingsChanged += () =>
         {
 #if WINDOWS10_0_17763_0_OR_GREATER
-            SetBackdrop((CustomPInvoke.BackdropType)Enum.Parse(typeof(CustomPInvoke.BackdropType), Settings.Default.BackdropType, ignoreCase: true));
+            SetBackdrop((CustomPInvoke.BackdropType)Enum.Parse(typeof(CustomPInvoke.BackdropType), AppSetting.BackdropType ?? "Mica", ignoreCase: true));
 #endif
             var w = WebView.CoreWebView2;
             if (w != null)
             {
-                w.Settings.AreDevToolsEnabled = Settings.Default.EnableDevTools;
+                w.Settings.AreDevToolsEnabled = AppSetting.EnableDevTools;
             }
         };
         //Icon = ImageSourceFromBitmap(ProgramResources.Logo);

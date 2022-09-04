@@ -1,9 +1,49 @@
-﻿using System;
+﻿using CustomPInvoke;
+using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-namespace MicaDiscord;
+#if WINDOWS10_0_17763_0_OR_GREATER
+using Windows.Storage;
+#endif
 
+namespace MicaDiscord;
+#if WINDOWS10_0_17763_0_OR_GREATER
+static class Setting {
+    static ApplicationDataContainer ApplicationSetting = ApplicationData.Current.LocalSettings;
+    public static void Save() { /* Do Nothing */ }
+    public static bool ReplaceDiscordBackground
+    {
+        get => (bool)(ApplicationSetting.Values[nameof(ReplaceDiscordBackground)] ?? false);
+        set => ApplicationSetting.Values[nameof(ReplaceDiscordBackground)] = value;
+    }
+    public static bool UseBackdropAnyway
+    {
+        get => (bool)(ApplicationSetting.Values[nameof(UseBackdropAnyway)] ?? false);
+        set => ApplicationSetting.Values[nameof(UseBackdropAnyway)] = value;
+    }
+    public static bool UseSystemTray
+    {
+        get => (bool)(ApplicationSetting.Values[nameof(UseSystemTray)] ?? true);
+        set => ApplicationSetting.Values[nameof(UseSystemTray)] = value;
+    }
+    public static bool EnableDevTools
+    {
+        get => (bool)(ApplicationSetting.Values[nameof(EnableDevTools)] ?? false);
+        set => ApplicationSetting.Values[nameof(EnableDevTools)] = value;
+    }
+    public static bool ModeAwareCSS
+    {
+        get => (bool)(ApplicationSetting.Values[nameof(ModeAwareCSS)] ?? true);
+        set => ApplicationSetting.Values[nameof(ModeAwareCSS)] = value;
+    }
+    public static string? BackdropType
+    {
+        get => (string?)(ApplicationSetting.Values[nameof(BackdropType)] ?? "Mica");
+        set => ApplicationSetting.Values[nameof(BackdropType)] = value;
+    }
+}
+#endif
 /// <summary>
 /// Interaction logic for SettingsDialog.xaml
 /// </summary>
@@ -11,6 +51,9 @@ public partial class SettingsDialog : Grid
 {
     public bool RequiresReload { get; private set; } = false;
     public void ResetRequiresReload() => RequiresReload = false;
+#if !WINDOWS10_0_17763_0_OR_GREATER
+    static Settings Setting = Settings.Default;
+#endif
     public SettingsDialog()
     {
         InitializeComponent();
@@ -22,24 +65,24 @@ public partial class SettingsDialog : Grid
 #if DEBUG
                 ReloadCSSButton.Visibility = Visibility.Hidden;
 #endif
-                Backdrop.SelectedItem = Enum.Parse(typeof(CustomPInvoke.BackdropType), Settings.Default.BackdropType);
-                ReplaceBackgroundToggle.Content = Settings.Default.ReplaceDiscordBackground ? "Disable" : "Enable";
-                UseBackdropAnyway.Content = Settings.Default.UseBackdropAnyway ? "Use Solid Color" : "Enable Anyway";
-                Systray.IsChecked = Settings.Default.UseSystemTray;
-                DevTools.Content = Settings.Default.EnableDevTools ? "Disable" : "Enable";
-                ModeAwareCSS.IsChecked = Settings.Default.ModeAwareCSS;
+                Backdrop.SelectedItem = Enum.Parse(typeof(BackdropType), Settings.Default.BackdropType);
+                ReplaceBackgroundToggle.Content = Setting.ReplaceDiscordBackground ? "Disable" : "Enable";
+                UseBackdropAnyway.Content = Setting.UseBackdropAnyway ? "Use Solid Color" : "Enable Anyway";
+                Systray.IsChecked = Setting.UseSystemTray;
+                DevTools.Content = Setting.EnableDevTools ? "Disable" : "Enable";
+                ModeAwareCSS.IsChecked = Setting.ModeAwareCSS;
                 RequiresReload = false;
             }
         };
         Backdrop.SelectionChanged += (_, _) =>
         {
-            Settings.Default.BackdropType = Backdrop.SelectedItem.ToString();
-            Settings.Default.Save();
+            Setting.BackdropType = Backdrop.SelectedItem.ToString();
+            Setting.Save();
             OnSettingsChanged?.Invoke();
         };
         ReplaceBackgroundToggle.Click += (_, _) =>
         {
-            bool newValue = !Settings.Default.ReplaceDiscordBackground;
+            bool newValue = !Setting.ReplaceDiscordBackground;
             if (newValue)
             {
                 if (MessageBox.Show(
@@ -55,9 +98,9 @@ public partial class SettingsDialog : Grid
                 != MessageBoxResult.Yes)
                     return;
             }
-            Settings.Default.ReplaceDiscordBackground = newValue;
+            Setting.ReplaceDiscordBackground = newValue;
             ReplaceBackgroundToggle.Content = newValue ? "Disable" : "Enable";
-            Settings.Default.Save();
+            Setting.Save();
             OnSettingsChanged?.Invoke();
             RequiresReload = true;
         };
@@ -79,9 +122,9 @@ public partial class SettingsDialog : Grid
                 != MessageBoxResult.Yes)
                     return;
             }
-            Settings.Default.EnableDevTools = newValue;
+            Setting.EnableDevTools = newValue;
             DevTools.Content = newValue ? "Disable" : "Enable";
-            Settings.Default.Save();
+            Setting.Save();
             OnSettingsChanged?.Invoke();
             RequiresReload = true;
         };
@@ -100,9 +143,9 @@ public partial class SettingsDialog : Grid
                 != MessageBoxResult.Yes)
                     return;
             }
-            Settings.Default.UseBackdropAnyway = newValue;
+            Setting.UseBackdropAnyway = newValue;
             UseBackdropAnyway.Content = newValue ? "Use Solid Color" : "Enable Anyway";
-            Settings.Default.Save();
+            Setting.Save();
             OnSettingsChanged?.Invoke();
             RequiresReload = true;
         };
@@ -122,20 +165,19 @@ public partial class SettingsDialog : Grid
 
     private void SystrayToggled(object sender, RoutedEventArgs e)
     {
-        Settings.Default.UseSystemTray = Systray.IsChecked ?? false;
-        Settings.Default.Save();
+        Setting.UseSystemTray = Systray.IsChecked ?? false;
+        Setting.Save();
     }
     private void ModeAwareCSSToggled(object sender, RoutedEventArgs e)
     {
-        Settings.Default.ModeAwareCSS = ModeAwareCSS.IsChecked ?? false;
-        Settings.Default.Save();
+        Setting.ModeAwareCSS = ModeAwareCSS.IsChecked ?? false;
+        Setting.Save();
         RequiresReload = true;
     }
 
     private void ReloadCSS(object sender, RoutedEventArgs e)
     {
-#if DEBUG
-#else
+#if !DEBUG
         MainWindow.DefinedCSS = System.IO.File.ReadAllText("./The CSS.css");
         RequiresReload = true;
 #endif

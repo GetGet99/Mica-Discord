@@ -2,7 +2,8 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFrameworks>net6.0-windows10.0.17763.0;net6.0-windows7.0</TargetFrameworks>
+		<!--<TargetFrameworks>net6.0-windows10.0.17763.0;net6.0-windows7.0</TargetFrameworks>-->
+		<TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<UseWPF>true</UseWPF>
 		<AssemblyName>MicaDiscord</AssemblyName>
@@ -14,10 +15,11 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<SupportedOSPlatformVersions>10.0.17763.0;7.0</SupportedOSPlatformVersions>
 		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
-	<PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.17763.0' ">
+	<!--<PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.17763.0' ">
 		<WindowsPackageType>None</WindowsPackageType>
-	</PropertyGroup>
+	</PropertyGroup>-->
 	<ItemGroup>
 		<Compile Remove="Experimental\**" />
 		<EmbeddedResource Remove="Experimental\**" />
@@ -66,12 +68,14 @@
 		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1248-prerelease">
 			<Aliases>WV2</Aliases>
 		</PackageReference>
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.3" />
+		
 		<PackageReference Include="PInvoke.DwmApi" Version="0.7.104" />
 		<PackageReference Include="PInvoke.UxTheme" Version="0.7.104" />
 		<PackageReference Include="PInvoke.Win32" Version="0.7.104" />
 	</ItemGroup>
-
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net6.0-windows10.0.17763.0' ">
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.0.3" />
+	</ItemGroup>
 	<ItemGroup>
 		<Page Include="App.xaml">
 			<Generator>MSBuild:Compile</Generator>
@@ -88,6 +92,11 @@
 		<Compile Update="ModernContextMenuForm.cs">
 			<SubType>Form</SubType>
 		</Compile>
+		<Compile Update="Settings.Designer.cs">
+		  <DesignTimeSharedInput>True</DesignTimeSharedInput>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>Settings.settings</DependentUpon>
+		</Compile>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -99,6 +108,10 @@
 	<ItemGroup>
 		<None Update="Resources\Mica Discord.ico">
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</None>
+		<None Update="Settings.settings">
+		  <Generator>SettingsSingleFileGenerator</Generator>
+		  <LastGenOutput>Settings.Designer.cs</LastGenOutput>
 		</None>
 		<None Update="The CSS - Fluent.css">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>

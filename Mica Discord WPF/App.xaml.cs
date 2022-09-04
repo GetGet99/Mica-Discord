@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Forms;
 using WPFApplication = System.Windows.Application;
 using WV2::Microsoft.Web.WebView2.Core;
+using System.IO;
 #if WINDOWS10_0_17763_0_OR_GREATER
 using Microsoft.Windows.ApplicationModel.DynamicDependency;
 #endif
@@ -32,6 +33,7 @@ public partial class App : WPFApplication
     {
         try
         {
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(typeof(MainWindow).Assembly.Location) ?? throw new NullReferenceException());
             base.OnStartup(e);
             NotifyIcon.Click += (_, _) => OpenMenu();
             //var mainwindow = (MainWindow)MainWindow;

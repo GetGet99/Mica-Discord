@@ -12,6 +12,11 @@ Failed Experiments/Mica Discord WinUI 3/bin
 Failed Experiments/Mica Discord WinUI 3/obj
 Failed Experiments/SettingsBuilder/bin
 Failed Experiments/SettingsBuilder/obj
+Mica Discord Packager/bin
+Mica Discord Packager/obj
+Mica Discord Packager/Package.StoreAssociation.xml
+Mica Discord Packager/AppPackages
+Mica Discord Packager/BundleArtifacts
 Future/Mica Browser/bin
 Future/Mica Browser/obj
 Future/Mica Window/bin
