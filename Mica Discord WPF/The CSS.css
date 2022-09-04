@@ -68,6 +68,7 @@ html.theme-light {
     --background-message-hover: hsla(var(--theme-layering-prop) / 0.07) !important;
     --background-floating: var(--theme-bg-floating) !important;
     --background-accent: var(--theme-bg-layering) !important;
+    --profile-body-background-color: transparent !important;
 
     --activity-card-background: var(--theme-bg-layering) !important;
     --deprecated-store-bg: var(--background-primary) !important;
@@ -153,7 +154,10 @@ article, /* Embeded */
 *[class*="lookFilled"]:not(*[class*="color"]), /* Any spcial controls in chat or somewhere else (combobox, etc.) */
 .container-2cd8Mz,
 .accountProfileCard-lbN7n-, /* Settings Page -> My Account -> [your profile background] */
-.inset-SbsSFp /* The card in Home -> Friend page -> Inner Card */
+.inset-SbsSFp, /* The card in Home -> Friend page -> Inner Card */
+.messageGroupWrapper-1jf_7C, /* Pinned Menu Message */
+.tutorial-Nb3Zz5, /* Tutorial Inbox Menu Message */
+.messages-23can0 /* Inbox Menu Message Background */
 {
     background-color: var(--theme-bg-layering) !important;
 }
@@ -325,12 +329,13 @@ border-radius: var(--theme-border-radius) var(--theme-border-radius) 0px 0px;
 .hljs-comment {
     color: seagreen !important;
 }
-div[class*="popout"] /* Popout (Class) */
+div[class*="popout"]:not(.popoutBanner-16rVDY):not(.popoutBanner-3cqRD9) /* Popout (Class) */
 {
     border-width: 1px;
     border-color: var(--theme-border-color) !important;
     background-color: var(--theme-bg-floating) !important;
 }
+.menu-1QACrS, /* Context Menu On Message */
 div[id*="popout"] /* Thread Menu and Pinned Message */
 {
     background-color: var(--theme-bg-floating) !important;
@@ -366,4 +371,23 @@ div[id*="popout"] /* Thread Menu and Pinned Message */
     color: var(--text-muted);
     font-size: 12px;
     line-height: 16px;
+}
+
+.userPopoutInner-PA9zkU, /* User Profile Popout */
+.bodyInnerWrapper-2bQs1k, /* User Profile Black Region */
+.messagesPopoutWrap-3zryHW, /* Pinned Popout */
+.header-1w9Q93, /* Pinned Popout Header */
+.container-18GwIk, /* Thread Popout */
+.container-2rzKKA, /* Thread Popout Threads */
+.header-3_zmOb, /* Thread Popout Header */
+.searchBox-3IjAC1, /* Thread Search Bar */
+.recentMentionsPopout-2bI1ZN, /* Inbox Popout */
+.channelHeader-DFRX8q /* Inbox Header for Channel */
+{
+    background: transparent !important;
+}
+.userPopoutInner-PA9zkU > .banner-2boKnS.popoutBanner-16rVDY,
+.banner-1YaD3N.popoutBanner-3cqRD9
+{
+    opacity: 30%;
 }
