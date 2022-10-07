@@ -247,7 +247,7 @@ No, I don't want that since it will be hard to style later.
 {
     background: transparent !important;
 }
-.content-2a4AW9, .members-3WRCEx, .membersWrap-3NUR2t {
+.content-2a4AW9:not(.list-3FIpnh>div:first-child), .members-3WRCEx, .membersWrap-3NUR2t {
     min-height: 100%;
     padding: 0px !important;
 }
@@ -327,7 +327,22 @@ border-radius: var(--theme-border-radius) var(--theme-border-radius) 0px 0px;
     font-weight: 600;
 }
 .hljs-comment {
-    color: seagreen !important;
+    color: #659952 !important;
+}
+.hljs-keyword {
+    color: #619dd8;
+}
+.hljs.csharp .hljs-keyword::content(using) {
+    color: #c186c1;
+}
+.hljs-string {
+    color: #c99076;
+}
+.hljs-title {
+    color: #62c9b0;
+}
+.hljs-attr {
+    color: #a4ddff;
 }
 div[class*="popout"]:not(.popoutBanner-16rVDY):not(.popoutBanner-3cqRD9) /* Popout (Class) */
 {
@@ -379,6 +394,7 @@ div[id*="popout"] /* Thread Menu and Pinned Message */
 .header-1w9Q93, /* Pinned Popout Header */
 .container-18GwIk, /* Thread Popout */
 .container-2rzKKA, /* Thread Popout Threads */
+.container-3wLKDe, /* Forum Background */
 .header-3_zmOb, /* Thread Popout Header */
 .searchBox-3IjAC1, /* Thread Search Bar */
 .recentMentionsPopout-2bI1ZN, /* Inbox Popout */

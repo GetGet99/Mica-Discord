@@ -10,7 +10,7 @@
     <SplashScreenSource>D:\Programming\VS\Mica Discord\Mica Discord WPF\Resources\Mica Discord.png</SplashScreenSource>
     <PackageLogoSource>D:\Programming\VS\Mica Discord\Mica Discord WPF\Resources\Mica Discord.png</PackageLogoSource>
     <AppxShowAllApps>False</AppxShowAllApps>
-    <UapAppxPackageBuildMode>StoreAndSideload</UapAppxPackageBuildMode>
+    <UapAppxPackageBuildMode>SideloadOnly</UapAppxPackageBuildMode>
     <AppxBuildConfigurationSelection>x86|x64</AppxBuildConfigurationSelection>
     <PackageOptionalProjectsInIdeBuilds>True</PackageOptionalProjectsInIdeBuilds>
   </PropertyGroup>
